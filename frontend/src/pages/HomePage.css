@@ -2,6 +2,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background: linear-gradient(180deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
 }
 
 .main-content {
@@ -9,26 +10,27 @@
     padding: var(--spacing-lg) 0;
 }
 
+/* Hero Section */
 .hero-section {
     text-align: center;
     padding: var(--spacing-xl) 0;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lg);
 }
 
 .hero-section h1 {
     font-size: 2.5rem;
     margin-bottom: var(--spacing-sm);
-    background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+    background: linear-gradient(135deg, #fff 0%, #a5b4fc 50%, #c4b5fd 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
 
 .hero-subtitle {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1rem;
     margin-bottom: var(--spacing-lg);
-    max-width: 600px;
+    max-width: 500px;
     margin-left: auto;
     margin-right: auto;
 }
@@ -39,22 +41,23 @@
     background: rgba(239, 68, 68, 0.1);
     border: 1px solid rgba(239, 68, 68, 0.3);
     border-radius: var(--radius-md);
-    color: var(--accent-danger);
+    color: #f87171;
     display: inline-flex;
     align-items: center;
     gap: var(--spacing-sm);
 }
 
+/* Empty State */
 .empty-section {
     padding: var(--spacing-xl) 0;
 }
 
 .empty-state {
     text-align: center;
-    padding: var(--spacing-xl) * 2;
-    background: var(--bg-secondary);
-    border: 1px dashed var(--border-subtle);
-    border-radius: var(--radius-lg);
+    padding: 60px 40px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
 }
 
 .empty-icon {
@@ -64,48 +67,75 @@
 
 .empty-state h2 {
     margin-bottom: var(--spacing-sm);
+    color: #fff;
 }
 
 .empty-state p {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
     margin-bottom: var(--spacing-lg);
 }
 
+/* Sources Section */
 .sources-section {
-    margin-top: var(--spacing-lg);
+    margin-top: var(--spacing-md);
 }
 
 .sources-header {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
 }
 
 .sources-header h2 {
     font-size: 1.25rem;
     margin: 0;
+    color: #fff;
 }
 
 .sources-count {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
     font-size: 13px;
 }
 
+/* Grid Layout for Cards */
 .sources-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 16px;
+}
+
+/* Expanded cards span full width */
+.sources-list .source-card.expanded {
+    grid-column: 1 / -1;
 }
 
 .no-results {
+    grid-column: 1 / -1;
     text-align: center;
-    padding: var(--spacing-xl);
-    color: var(--text-muted);
+    padding: 40px;
+    color: rgba(255, 255, 255, 0.5);
 }
 
 .no-results p {
     margin-bottom: var(--spacing-md);
+}
+
+/* Spinner */
+.spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #a5b4fc;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto var(--spacing-md);
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 /* Legacy - keep for strategy pages */
@@ -125,11 +155,22 @@
 }
 
 .group-count {
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.5);
     font-size: 14px;
 }
 
 .btn-sm {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sources-list {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-section h1 {
+        font-size: 1.75rem;
+    }
 }

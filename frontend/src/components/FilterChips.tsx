@@ -6,6 +6,7 @@ export interface Filters {
     underlying: string[];
     sourceType: string[];
     dte: string[];
+    search: string;
 }
 
 interface FilterChipsProps {
@@ -48,104 +49,111 @@ export function FilterChips({
         };
     }, [sources]);
 
-    const toggleFilter = (category: keyof Filters, value: string) => {
-        const current = filters[category];
+    const toggleFilter = (category: keyof Omit<Filters, 'search'>, value: string) => {
+        const current = filters[category] as string[];
         const updated = current.includes(value)
             ? current.filter(v => v !== value)
             : [...current, value];
         onFilterChange({ ...filters, [category]: updated });
     };
 
-    const clearAllFilters = () => {
-        onFilterChange({ underlying: [], sourceType: [], dte: [] });
-    };
-
-    const hasActiveFilters =
-        filters.underlying.length > 0 ||
-        filters.sourceType.length > 0 ||
-        filters.dte.length > 0;
-
-    const formatDTE = (dte: string) => {
-        const val = parseInt(dte);
-        if (val === 0) return '0 DTE';
-        return `${val} DTE`;
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        onFilterChange({ ...filters, search: e.target.value });
     };
 
     const sourceTypeLabels: Record<string, string> = {
-        youtube: '📹 YouTube',
-        reddit: '💬 Reddit',
-        article: '📰 Article',
+        youtube: 'YouTube',
+        reddit: 'Reddit',
+        article: 'Article',
+    };
+
+    const formatDTE = (dte: string) => {
+        const val = parseInt(dte);
+        return `${val} DTE`;
     };
 
     return (
         <div className="filter-bar">
-            <div className="filter-groups">
-                {/* Underlying Filters */}
-                {underlyings.length > 0 && (
-                    <div className="filter-group">
-                        {underlyings.map(sym => (
-                            <button
-                                key={sym}
-                                className={`chip ${filters.underlying.includes(sym) ? 'active' : ''}`}
-                                onClick={() => toggleFilter('underlying', sym)}
-                            >
-                                {sym}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* Source Type Filters */}
-                {sourceTypes.length > 1 && (
-                    <div className="filter-group">
-                        {sourceTypes.map(type => (
-                            <button
-                                key={type}
-                                className={`chip ${filters.sourceType.includes(type) ? 'active' : ''}`}
-                                onClick={() => toggleFilter('sourceType', type)}
-                            >
-                                {sourceTypeLabels[type] || type}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* DTE Filters */}
-                {dtes.length > 0 && (
-                    <div className="filter-group">
-                        {dtes.slice(0, 5).map(dte => (
-                            <button
-                                key={dte}
-                                className={`chip ${filters.dte.includes(dte) ? 'active' : ''}`}
-                                onClick={() => toggleFilter('dte', dte)}
-                            >
-                                {formatDTE(dte)}
-                            </button>
-                        ))}
-                    </div>
-                )}
-
-                {/* Clear Filters */}
-                {hasActiveFilters && (
-                    <button className="chip chip-clear" onClick={clearAllFilters}>
-                        ✕ Clear
-                    </button>
-                )}
+            {/* Search Input */}
+            <div className="search-container">
+                <span className="search-icon">🔍</span>
+                <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Search strategies, authors..."
+                    value={filters.search}
+                    onChange={handleSearchChange}
+                />
             </div>
 
-            {/* Sort Dropdown */}
-            <div className="sort-dropdown">
-                <label htmlFor="sort-select">Sort:</label>
-                <select
-                    id="sort-select"
-                    value={sortBy}
-                    onChange={e => onSortChange(e.target.value)}
-                >
-                    <option value="specificity">Specificity ↓</option>
-                    <option value="trust">Trust ↓</option>
-                    <option value="date">Date ↓</option>
-                    <option value="title">Title A-Z</option>
-                </select>
+            {/* Filter Chips Row */}
+            <div className="chips-row">
+                {/* Underlying Chips */}
+                <div className="chip-group">
+                    {underlyings.map(sym => (
+                        <button
+                            key={sym}
+                            className={`chip ${filters.underlying.includes(sym) ? 'active' : ''} ${sym.toLowerCase()}`}
+                            onClick={() => toggleFilter('underlying', sym)}
+                        >
+                            {sym}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Separator */}
+                {underlyings.length > 0 && sourceTypes.length > 0 && (
+                    <div className="chip-separator" />
+                )}
+
+                {/* Source Type Chips */}
+                <div className="chip-group">
+                    {sourceTypes.map(type => (
+                        <button
+                            key={type}
+                            className={`chip ${filters.sourceType.includes(type) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('sourceType', type)}
+                        >
+                            {sourceTypeLabels[type] || type}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Separator */}
+                {sourceTypes.length > 0 && dtes.length > 0 && (
+                    <div className="chip-separator" />
+                )}
+
+                {/* DTE Chips */}
+                <div className="chip-group">
+                    {dtes.slice(0, 4).map(dte => (
+                        <button
+                            key={dte}
+                            className={`chip ${filters.dte.includes(dte) ? 'active' : ''}`}
+                            onClick={() => toggleFilter('dte', dte)}
+                        >
+                            {formatDTE(dte)}
+                        </button>
+                    ))}
+                </div>
+
+                {/* Spacer */}
+                <div className="chip-spacer" />
+
+                {/* Sort Dropdown */}
+                <div className="sort-container">
+                    <span className="sort-label">Sort:</span>
+                    <select
+                        className="sort-select"
+                        value={sortBy}
+                        onChange={e => onSortChange(e.target.value)}
+                    >
+                        <option value="specificity">Specificity ↓</option>
+                        <option value="trust">Trust ↓</option>
+                        <option value="date">Date ↓</option>
+                        <option value="title">Title A-Z</option>
+                    </select>
+                </div>
             </div>
         </div>
     );

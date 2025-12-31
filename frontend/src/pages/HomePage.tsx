@@ -29,6 +29,7 @@ export function HomePage() {
         underlying: [],
         sourceType: [],
         dte: [],
+        search: '',
     });
     const [sortBy, setSortBy] = useState('specificity');
 
@@ -46,6 +47,19 @@ export function HomePage() {
     // Apply filters
     const filteredSources = useMemo(() => {
         return allSources.filter(source => {
+            // Search filter
+            if (filters.search) {
+                const searchLower = filters.search.toLowerCase();
+                const title = (source.title || '').toLowerCase();
+                const author = (source.author || '').toLowerCase();
+                const strategyName = (source.extracted_data?.strategy_name?.value || '').toLowerCase();
+                if (!title.includes(searchLower) &&
+                    !author.includes(searchLower) &&
+                    !strategyName.includes(searchLower)) {
+                    return false;
+                }
+            }
+
             // Filter by underlying
             if (filters.underlying.length > 0) {
                 const underlying = source.extracted_data?.setup_rules?.underlying?.value;
@@ -221,7 +235,7 @@ export function HomePage() {
                                     <p>No sources match your filters.</p>
                                     <button
                                         className="btn btn-secondary"
-                                        onClick={() => setFilters({ underlying: [], sourceType: [], dte: [] })}
+                                        onClick={() => setFilters({ underlying: [], sourceType: [], dte: [], search: '' })}
                                     >
                                         Clear Filters
                                     </button>

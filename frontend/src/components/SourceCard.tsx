@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import type { Source } from '../types';
-import { ScoreBadge } from './ScoreBadge';
 import './SourceCard.css';
 
 interface SourceCardProps {
@@ -22,20 +21,28 @@ export function SourceCard({ source, onClick, onDelete, defaultExpanded = false 
         article: '📰',
     }[source.source_type] || '📄';
 
-    const formatDTE = (dte: number | string | null | undefined) => {
-        if (dte === null || dte === undefined) return null;
-        const val = typeof dte === 'string' ? parseInt(dte) : dte;
-        if (isNaN(val)) return String(dte);
-        if (val === 0) return '0 DTE';
-        return `${val} DTE`;
-    };
+    // Combined score (average of specificity and trust)
+    const specScore = quality?.specificity_score || 0;
+    const trustScore = quality?.trust_score || 0;
+    const combinedScore = ((specScore + trustScore) / 2);
 
-    const formatDelta = (delta: number | string | null | undefined) => {
-        if (delta === null || delta === undefined) return null;
-        const val = typeof delta === 'string' ? parseFloat(delta) : delta;
-        if (isNaN(val)) return String(delta);
-        return val < 1 ? `${Math.round(val * 100)}Δ` : `${val}Δ`;
-    };
+    // Score tier for color coding
+    const scoreTier = combinedScore >= 7 ? 'high' : combinedScore >= 4 ? 'medium' : 'low';
+
+    // Get underlying and DTE for badges
+    const underlying = data?.setup_rules?.underlying?.value;
+    const dte = data?.setup_rules?.dte?.value;
+    const dteLabel = dte !== undefined && dte !== null ? `${dte} DTE` : null;
+
+    // Build title from strategy name or source title
+    const title = data?.strategy_name?.value || source.title || 'Unknown Strategy';
+
+    // Include underlying and DTE in display title if available
+    const displayTitle = [
+        title,
+        underlying,
+        dteLabel
+    ].filter(Boolean).join(' ');
 
     const handleToggle = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -61,13 +68,16 @@ export function SourceCard({ source, onClick, onDelete, defaultExpanded = false 
         setShowDeleteConfirm(false);
     };
 
-    // Get underlying for badge display
-    const underlying = data?.setup_rules?.underlying?.value;
-    const dte = data?.setup_rules?.dte?.value;
+    const formatDelta = (delta: number | string | null | undefined) => {
+        if (delta === null || delta === undefined) return null;
+        const val = typeof delta === 'string' ? parseFloat(delta) : delta;
+        if (isNaN(val)) return String(delta);
+        return val < 1 ? `${Math.round(val * 100)}Δ` : `${val}Δ`;
+    };
 
     return (
-        <div className={`source-card card ${isExpanded ? 'expanded' : 'collapsed'}`}>
-            {/* Collapsed Header - Always Visible */}
+        <div className={`source-card ${scoreTier} ${isExpanded ? 'expanded' : ''}`}>
+            {/* Card Header */}
             <div className="card-header" onClick={handleToggle}>
                 <button className="expand-btn" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
                     <span className={`chevron ${isExpanded ? 'up' : 'down'}`}>▼</span>
@@ -75,79 +85,42 @@ export function SourceCard({ source, onClick, onDelete, defaultExpanded = false 
 
                 <span className="source-icon">{sourceIcon}</span>
 
-                <div className="card-title-section">
-                    <h4 className="card-title">{source.title || data?.strategy_name?.value || 'Unknown Strategy'}</h4>
-                    <span className="card-author">{source.author || 'Unknown'}</span>
+                <div className="card-content">
+                    <h4 className="card-title">{displayTitle}</h4>
+                    <span className="card-author">Author: {source.author || 'Unknown'}</span>
                 </div>
 
-                {/* Quick badges in collapsed view */}
-                <div className="quick-badges">
-                    {underlying && <span className="badge badge-underlying">{underlying}</span>}
-                    {dte !== undefined && dte !== null && <span className="badge badge-dte">{formatDTE(dte)}</span>}
-                </div>
+                {/* Symbol Badge */}
+                {underlying && (
+                    <span className={`symbol-badge ${underlying.toLowerCase()}`}>{underlying}</span>
+                )}
 
-                <div className="card-scores">
-                    <ScoreBadge label="Spec" score={quality?.specificity_score || 0} />
-                    <ScoreBadge label="Trust" score={quality?.trust_score || 0} />
-                </div>
-
-                {/* Actions in header when collapsed */}
-                <div className="card-actions">
-                    {onDelete && !showDeleteConfirm && (
-                        <button className="btn-icon btn-delete" onClick={handleDeleteClick} title="Delete">
-                            🗑️
-                        </button>
-                    )}
-                    {showDeleteConfirm && (
-                        <div className="delete-confirm" onClick={e => e.stopPropagation()}>
-                            <button className="btn-confirm btn-yes" onClick={handleConfirmDelete} disabled={isDeleting}>
-                                {isDeleting ? '...' : '✓'}
-                            </button>
-                            <button className="btn-confirm btn-no" onClick={handleCancelDelete} disabled={isDeleting}>
-                                ✗
-                            </button>
-                        </div>
-                    )}
-                    <a
-                        href={source.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-icon btn-link"
-                        onClick={e => e.stopPropagation()}
-                        title="View source"
-                    >
-                        ↗
-                    </a>
+                {/* Combined Score */}
+                <div className={`score-badge ${scoreTier}`}>
+                    {combinedScore.toFixed(1)}
                 </div>
             </div>
 
             {/* Expanded Content */}
             {isExpanded && (
                 <div className="card-body" onClick={onClick}>
-                    {/* Strategy Parameters Grid */}
                     <div className="params-grid">
                         {underlying && (
                             <div className="param-item">
                                 <span className="param-label">Underlying</span>
-                                <span className="param-value highlight">{underlying}</span>
+                                <span className="param-value">{underlying}</span>
                             </div>
                         )}
-                        {dte !== undefined && dte !== null && (
+                        {dteLabel && (
                             <div className="param-item">
                                 <span className="param-label">DTE</span>
-                                <span className="param-value">{formatDTE(dte)}</span>
+                                <span className="param-value">{dteLabel}</span>
                             </div>
                         )}
                         {data?.setup_rules?.delta?.value && (
                             <div className="param-item">
                                 <span className="param-label">Delta</span>
                                 <span className="param-value">{formatDelta(data.setup_rules.delta.value)}</span>
-                            </div>
-                        )}
-                        {data?.setup_rules?.width?.value && (
-                            <div className="param-item">
-                                <span className="param-label">Width</span>
-                                <span className="param-value">{data.setup_rules.width.value} pts</span>
                             </div>
                         )}
                         {data?.management_rules?.profit_target?.value && (
@@ -164,29 +137,44 @@ export function SourceCard({ source, onClick, onDelete, defaultExpanded = false 
                         )}
                     </div>
 
-                    {/* Key Insights */}
                     {data?.key_insights && data.key_insights.length > 0 && (
                         <div className="insights-section">
                             <span className="section-label">💡 Key Insights</span>
                             <ul className="insights-list">
-                                {data.key_insights.slice(0, 3).map((insight, i) => (
+                                {data.key_insights.slice(0, 2).map((insight, i) => (
                                     <li key={i}>{insight}</li>
                                 ))}
                             </ul>
                         </div>
                     )}
 
-                    {/* Gaps/Warnings */}
-                    {quality?.gaps && quality.gaps.length > 0 && (
-                        <div className="gaps-section">
-                            <span className="section-label">⚠️ Missing Info</span>
-                            <div className="gaps-list">
-                                {quality.gaps.slice(0, 4).map((gap, i) => (
-                                    <span key={i} className="gap-tag">{gap}</span>
-                                ))}
+                    <div className="card-actions">
+                        {onDelete && !showDeleteConfirm && (
+                            <button className="btn-action btn-delete" onClick={handleDeleteClick}>
+                                🗑️ Delete
+                            </button>
+                        )}
+                        {showDeleteConfirm && (
+                            <div className="delete-confirm">
+                                <span>Delete this source?</span>
+                                <button className="btn-yes" onClick={handleConfirmDelete} disabled={isDeleting}>
+                                    {isDeleting ? '...' : 'Yes'}
+                                </button>
+                                <button className="btn-no" onClick={handleCancelDelete} disabled={isDeleting}>
+                                    No
+                                </button>
                             </div>
-                        </div>
-                    )}
+                        )}
+                        <a
+                            href={source.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-action btn-link"
+                            onClick={e => e.stopPropagation()}
+                        >
+                            View Source →
+                        </a>
+                    </div>
                 </div>
             )}
         </div>
