@@ -81,6 +81,8 @@ async def extract_source(request: ExtractionRequest):
     - YouTube videos (via transcript)
     - Reddit posts (post + comments)
     - Articles (web scraping)
+    
+    Auto-saves extracted source to database.
     """
     try:
         # Detect source type
@@ -99,8 +101,9 @@ async def extract_source(request: ExtractionRequest):
             )
         
         # Calculate scores
-        specificity = calculate_specificity_score(extraction_result.extracted_data)
+        quality_metrics = calculate_specificity_score(extraction_result.extracted_data)
         trust = calculate_trust_score(extraction_result.extracted_data)
+        quality_metrics.trust_score = trust
         
         # Build Source object
         source = Source(
@@ -114,8 +117,53 @@ async def extract_source(request: ExtractionRequest):
             transcript_or_content=extraction_result.content,
             comment_content=extraction_result.comment_content,
             extracted_data=extraction_result.extracted_data,
-            quality_metrics=specificity.with_trust(trust),
+            quality_metrics=quality_metrics,
         )
+        
+        # Auto-save to database
+        try:
+            from app.api.sources import save_source
+            from app.db.database import async_session
+            async with async_session() as db:
+                from app.db.database import SourceDB
+                from sqlalchemy import select
+                from datetime import datetime
+                
+                # Check if exists
+                result = await db.execute(select(SourceDB).where(SourceDB.id == source.id))
+                existing = result.scalar_one_or_none()
+                
+                if existing:
+                    # Update
+                    existing.title = source.title
+                    existing.author = source.author
+                    existing.extracted_data = source.extracted_data.model_dump() if source.extracted_data else {}
+                    existing.quality_metrics = source.quality_metrics.model_dump() if source.quality_metrics else {}
+                    existing.specificity_score = source.quality_metrics.specificity_score if source.quality_metrics else 0
+                    existing.trust_score = source.quality_metrics.trust_score if source.quality_metrics else 0
+                    existing.updated_at = datetime.utcnow()
+                else:
+                    # Create
+                    db_source = SourceDB(
+                        id=source.id,
+                        url=source.url,
+                        source_type=source.source_type,
+                        title=source.title,
+                        author=source.author,
+                        published_date=datetime.fromisoformat(source.published_date) if source.published_date else None,
+                        transcript_or_content=source.transcript_or_content or "",
+                        comment_content=source.comment_content,
+                        platform_metrics=source.platform_metrics.model_dump() if source.platform_metrics else {},
+                        extracted_data=source.extracted_data.model_dump() if source.extracted_data else {},
+                        quality_metrics=source.quality_metrics.model_dump() if source.quality_metrics else {},
+                        specificity_score=source.quality_metrics.specificity_score if source.quality_metrics else 0,
+                        trust_score=source.quality_metrics.trust_score if source.quality_metrics else 0,
+                    )
+                    db.add(db_source)
+                await db.commit()
+        except Exception as db_error:
+            # Log but don't fail - extraction succeeded even if save failed
+            print(f"Warning: Failed to save source to database: {db_error}")
         
         return ExtractionResponse(success=True, source=source)
         
@@ -124,3 +172,4 @@ async def extract_source(request: ExtractionRequest):
             success=False,
             error=f"Extraction failed: {str(e)}"
         )
+

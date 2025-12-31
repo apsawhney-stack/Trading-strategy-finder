@@ -16,7 +16,7 @@ class ExtractedField(BaseModel):
     """A single extracted field with confidence and source quote."""
     value: Optional[str] = None
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    source_quote: Optional[str] = Field(default=None, max_length=200)
+    source_quote: Optional[str] = Field(default=None, max_length=500)
     interpretation: Literal["explicit", "implicit", "inferred", "missing"] = "missing"
 
 
@@ -25,7 +25,7 @@ class ExtractedNumericField(BaseModel):
     value: Optional[float] = None
     value_range: Optional[tuple[float, float]] = None
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
-    source_quote: Optional[str] = Field(default=None, max_length=200)
+    source_quote: Optional[str] = Field(default=None, max_length=500)
     interpretation: Literal["explicit", "implicit", "inferred", "missing"] = "missing"
 
 

@@ -8,7 +8,7 @@ and scores strategy insights from multiple sources.
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import extract, strategies, discover
+from app.api import extract, strategies, discover, sources
 from app.db.database import init_db
 from app.middleware.logging import LoggingMiddleware
 
@@ -40,6 +40,7 @@ app.add_middleware(
 app.include_router(extract.router, prefix="/api", tags=["extraction"])
 app.include_router(strategies.router, prefix="/api", tags=["strategies"])
 app.include_router(discover.router, prefix="/api", tags=["discovery"])
+app.include_router(sources.router, prefix="/api", tags=["sources"])
 
 
 @app.on_event("startup")

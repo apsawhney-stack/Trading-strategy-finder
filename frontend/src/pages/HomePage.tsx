@@ -7,16 +7,39 @@ import { SourceDetail } from '../components/SourceDetail';
 import { ExtractionProgress } from '../components/ExtractionProgress';
 import { DiscoveryModal } from '../components/DiscoveryModal';
 import { extractSource } from '../services/api';
+import { useSources } from '../hooks/useSources';
 import type { Source, ExtractionStep } from '../types';
 import './HomePage.css';
 
 export function HomePage() {
-    const [sources, setSources] = useState<Source[]>([]);
+    // Load saved sources from API
+    const { sources: savedSources, loading: loadingSources, refresh: refreshSources, deleteSource } = useSources();
+
+    // Local sources from current session
+    const [sessionSources, setSessionSources] = useState<Source[]>([]);
     const [isExtracting, setIsExtracting] = useState(false);
     const [currentStep, setCurrentStep] = useState<ExtractionStep>('fetching_content');
     const [error, setError] = useState<string | null>(null);
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const [showDiscovery, setShowDiscovery] = useState(false);
+
+    // Handle source deletion
+    const handleDelete = async (id: string): Promise<boolean> => {
+        const success = await deleteSource(id);
+        if (success) {
+            // Also remove from session sources if present
+            setSessionSources(prev => prev.filter(s => s.id !== id));
+        }
+        return success;
+    };
+
+    // Combine saved and session sources, deduping by ID
+    const allSources = [...sessionSources];
+    savedSources.forEach(saved => {
+        if (!allSources.some(s => s.id === saved.id)) {
+            allSources.push(saved);
+        }
+    });
 
     const handleExtract = async (url: string) => {
         setIsExtracting(true);
@@ -45,7 +68,9 @@ export function HomePage() {
 
             if (result.success && result.source) {
                 setCurrentStep('complete');
-                setSources(prev => [result.source!, ...prev]);
+                setSessionSources(prev => [result.source!, ...prev]);
+                // Refresh saved sources to include newly saved source
+                refreshSources();
             } else {
                 setError(result.error || 'Extraction failed');
             }
@@ -63,7 +88,7 @@ export function HomePage() {
     };
 
     // Group sources by strategy type
-    const strategyGroups = sources.reduce((acc, source) => {
+    const strategyGroups = allSources.reduce((acc, source) => {
         const strategyName = source.extracted_data?.strategy_name?.value || 'Other';
         if (!acc[strategyName]) {
             acc[strategyName] = [];
@@ -96,7 +121,14 @@ export function HomePage() {
                         )}
                     </section>
 
-                    {sources.length === 0 ? (
+                    {loadingSources ? (
+                        <section className="empty-section">
+                            <div className="empty-state">
+                                <div className="spinner"></div>
+                                <p>Loading saved sources...</p>
+                            </div>
+                        </section>
+                    ) : allSources.length === 0 ? (
                         <section className="empty-section">
                             <div className="empty-state">
                                 <div className="empty-icon">📊</div>
@@ -132,6 +164,7 @@ export function HomePage() {
                                                 key={source.id}
                                                 source={source}
                                                 onClick={() => setSelectedSource(source)}
+                                                onDelete={handleDelete}
                                             />
                                         ))}
                                     </div>

@@ -5,6 +5,11 @@ Loads from environment variables with sensible defaults.
 
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+from pathlib import Path
+
+# Get absolute path for database
+_BASE_DIR = Path(__file__).parent.parent
+_DB_PATH = _BASE_DIR / "strategy_finder.db"
 
 
 class Settings(BaseSettings):
@@ -16,11 +21,11 @@ class Settings(BaseSettings):
     reddit_client_secret: str = ""
     reddit_user_agent: str = "StrategyFinder/1.0"
     
-    # Database
-    database_url: str = "sqlite+aiosqlite:///./strategy_finder.db"
+    # Database - use absolute path
+    database_url: str = f"sqlite+aiosqlite:///{_DB_PATH}"
     
     # Cache
-    cache_dir: str = "./extraction_cache"
+    cache_dir: str = str(_BASE_DIR / "extraction_cache")
     cache_expiry_days: int = 7
     
     # LLM Settings

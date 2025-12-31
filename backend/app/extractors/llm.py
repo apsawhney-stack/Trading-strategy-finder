@@ -33,91 +33,56 @@ if settings.gemini_api_key:
 # Extraction Prompt
 # ============================================================================
 
-EXTRACTION_PROMPT = """
-You are an expert options trading analyst. Extract structured strategy data from the following transcript/content.
+EXTRACTION_PROMPT_TEMPLATE = '''
+You are an expert options trading analyst. Extract ALL strategy details from this content.
 
-CRITICAL RULES:
-1. For each field, provide:
-   - value: The extracted value (string or number)
-   - confidence: 0.0-1.0 based on how explicit the information is
-   - source_quote: Exact quote from text (max 150 chars)
-   - interpretation: "explicit" (directly stated), "implicit" (clearly implied), "inferred" (educated guess), "missing" (not found)
+For each field provide: value, confidence (0-1), source_quote (exact text), interpretation (explicit/implicit/inferred/missing)
 
-2. Distinguish interpretation types:
-   - EXPLICIT: "I trade 30 DTE" → confidence: 1.0, interpretation: "explicit"
-   - IMPLICIT: "Weekly options" → DTE: 7, confidence: 0.9, interpretation: "implicit"
-   - INFERRED: "Short-term trades" → DTE: [5, 14], confidence: 0.5, interpretation: "inferred"
-   - MISSING: Not mentioned at all → confidence: 0, interpretation: "missing"
+EXTRACT THESE FIELDS:
 
-3. IMPORTANT: Look for FAILURE MODES. If author only discusses wins, set bias_detected: true.
+1. strategy_name: Name of the strategy (e.g., "Iron Condor", "0 DTE Put Credit Spread")
+2. trader_name: Name of the person teaching/trading
+3. setup_rules:
+   - underlying: The ticker symbol (SPX, SPY, QQQ, etc.)
+   - dte: Days to expiration (e.g., 0, 7, 30, 45)
+   - delta: Delta target for strikes (e.g., 0.16, 0.30, "16 delta")
+   - strike_selection: How strikes are chosen (e.g., "ATM", "5 points wide")
+   - entry_criteria: When to enter (e.g., "IV rank above 30", "after market open")
+   - option_type: Type of options (puts, calls, spreads)
+   - width: Spread width in points (e.g., 5, 10, 25)
 
-4. Extract key insights, warnings, and memorable quotes.
+4. management_rules:
+   - profit_target: When to take profit (e.g., "50%", "$100", "21 DTE")
+   - stop_loss: When to exit for loss (e.g., "200%", "2x credit")
+   - adjustment_rules: How to adjust losing positions
+   - time_exit: When to exit based on time
 
-Return ONLY valid JSON matching this schema:
+5. risk_profile:
+   - win_rate: Expected win percentage
+   - max_drawdown: Worst expected loss
 
-{
-  "strategy_name": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "explicit|implicit|inferred|missing"},
-  "variation": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-  "trader_name": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-  "experience_level": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-  
-  "setup_rules": {
-    "underlying": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "option_type": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "strike_selection": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "dte": {"value": 30, "value_range": [25, 45], "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "width": {"value": 10, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "delta": {"value": 0.16, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "entry_criteria": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "entry_timing": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "buying_power_effect": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."}
-  },
-  
-  "management_rules": {
-    "profit_target": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "stop_loss": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "time_exit": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "adjustment_rules": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "rolling_rules": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "defensive_maneuvers": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."}
-  },
-  
-  "risk_profile": {
-    "max_loss_per_trade": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "win_rate": {"value": 0.75, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "risk_reward_ratio": {"value": "string", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "max_drawdown": {"value": 15.0, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."}
-  },
-  
-  "performance_claims": {
-    "starting_capital": {"value": 3200, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "ending_capital": {"value": 12000, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "total_return_percent": {"value": 275.0, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "time_period": {"value": "9 months", "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "profits_withdrawn": {"value": 0, "confidence": 0.0-1.0, "source_quote": "string", "interpretation": "..."},
-    "verified": false
-  },
-  
-  "failure_analysis": {
-    "failure_modes_mentioned": ["list of failure scenarios mentioned"],
-    "discusses_losses": true/false,
-    "max_drawdown_mentioned": 15.0 or null,
-    "recovery_strategy": "string or null",
-    "bias_detected": true/false
-  },
-  
-  "key_insights": ["list of key takeaways"],
-  "warnings": ["list of warnings or caveats mentioned"],
-  "quotes": ["memorable direct quotes from the content"]
-}
+6. key_insights: List of key takeaways from the content
+7. warnings: Any warnings or risks mentioned
+
+IMPORTANT: Look carefully for numbers! Extract DTE (0, 7, 30, 45), delta (0.16, 0.30), profit targets (50%, 75%), stop losses.
+
+Return ONLY valid JSON, no markdown, no explanation. Example:
+<<<JSON_EXAMPLE>>>
 
 CONTENT TO ANALYZE:
 ---
-{content}
+<<<CONTENT>>>
 ---
+'''
 
-Return ONLY the JSON, no markdown formatting, no code blocks.
-"""
+JSON_EXAMPLE = '''{"strategy_name":{"value":"0 DTE Iron Fly","confidence":1.0,"source_quote":"zero DTE iron fly","interpretation":"explicit"},"setup_rules":{"underlying":{"value":"SPX","confidence":1.0},"dte":{"value":0,"confidence":1.0},"delta":{"value":0.16,"confidence":0.8},"profit_target":{"value":"50%","confidence":0.9}},"key_insights":["Average hold time 18 minutes","Focus on premium collection"],"warnings":["High risk strategy"]}'''
+
+
+def build_extraction_prompt(content: str) -> str:
+    """Build extraction prompt with content substituted."""
+    prompt = EXTRACTION_PROMPT_TEMPLATE.replace('<<<CONTENT>>>', content)
+    prompt = prompt.replace('<<<JSON_EXAMPLE>>>', JSON_EXAMPLE)
+    return prompt
 
 
 # ============================================================================
@@ -166,10 +131,13 @@ def _parse_field(data: dict, key: str) -> ExtractedField:
     
     field_data = data[key]
     if isinstance(field_data, dict):
+        quote = field_data.get("source_quote")
+        if quote and len(quote) > 450:
+            quote = quote[:447] + "..."
         return ExtractedField(
             value=str(field_data.get("value", "")) if field_data.get("value") else None,
-            confidence=float(field_data.get("confidence", 0)),
-            source_quote=field_data.get("source_quote"),
+            confidence=float(field_data.get("confidence", 0)) if field_data.get("confidence") else 0.0,
+            source_quote=quote,
             interpretation=field_data.get("interpretation", "missing"),
         )
     return ExtractedField(value=str(field_data) if field_data else None, confidence=0.5)
@@ -180,18 +148,36 @@ def _parse_numeric_field(data: dict, key: str) -> ExtractedNumericField:
     if not data or key not in data:
         return ExtractedNumericField()
     
+    def extract_number(val):
+        """Extract number from value, handles strings like '30 points' or '0.16'."""
+        if val is None:
+            return None
+        if isinstance(val, (int, float)):
+            return float(val)
+        if isinstance(val, str):
+            # Try to extract first number from string
+            import re
+            match = re.search(r'[-+]?\d*\.?\d+', val)
+            if match:
+                return float(match.group())
+        return None
+    
     field_data = data[key]
     if isinstance(field_data, dict):
-        value = field_data.get("value")
+        value = extract_number(field_data.get("value"))
         value_range = field_data.get("value_range")
+        quote = field_data.get("source_quote")
+        if quote and len(quote) > 450:
+            quote = quote[:447] + "..."
         return ExtractedNumericField(
-            value=float(value) if value is not None else None,
-            value_range=tuple(value_range) if value_range else None,
-            confidence=float(field_data.get("confidence", 0)),
-            source_quote=field_data.get("source_quote"),
+            value=value,
+            value_range=tuple(value_range) if value_range and isinstance(value_range, list) else None,
+            confidence=float(field_data.get("confidence", 0)) if field_data.get("confidence") else 0.0,
+            source_quote=quote,
             interpretation=field_data.get("interpretation", "missing"),
         )
-    return ExtractedNumericField(value=float(field_data) if field_data else None, confidence=0.5)
+    return ExtractedNumericField(value=extract_number(field_data), confidence=0.5)
+
 
 
 def _parse_extraction(json_str: str) -> ExtractedStrategy:
@@ -199,11 +185,25 @@ def _parse_extraction(json_str: str) -> ExtractedStrategy:
     try:
         # Clean up JSON string (remove markdown code blocks if present)
         clean_json = json_str.strip()
-        if clean_json.startswith("```"):
-            clean_json = clean_json.split("```")[1]
-            if clean_json.startswith("json"):
-                clean_json = clean_json[4:]
+        
+        # Remove markdown code blocks
+        if "```json" in clean_json:
+            clean_json = clean_json.split("```json")[1].split("```")[0]
+        elif "```" in clean_json:
+            parts = clean_json.split("```")
+            if len(parts) >= 2:
+                clean_json = parts[1]
+        
         clean_json = clean_json.strip()
+        
+        # Find the JSON object boundaries
+        start_idx = clean_json.find('{')
+        end_idx = clean_json.rfind('}')
+        
+        if start_idx == -1 or end_idx == -1:
+            raise json.JSONDecodeError("No JSON object found", clean_json, 0)
+        
+        clean_json = clean_json[start_idx:end_idx + 1]
         
         data = json.loads(clean_json)
         
@@ -264,6 +264,9 @@ def _parse_extraction(json_str: str) -> ExtractedStrategy:
         )
         
     except json.JSONDecodeError as e:
+        # Log the error for debugging
+        print(f"JSON Parse Error: {e}")
+        print(f"Raw response (first 500 chars): {json_str[:500] if json_str else 'empty'}")
         # Return empty extraction on parse failure
         return ExtractedStrategy()
 
@@ -286,7 +289,7 @@ async def extract_strategy_from_text(content: str) -> ExtractedStrategy:
         # Extract from each chunk
         chunk_extractions = []
         for chunk in chunks:
-            prompt = EXTRACTION_PROMPT.format(content=chunk)
+            prompt = build_extraction_prompt(chunk)
             response = await _call_gemini(prompt)
             extraction = _parse_extraction(response)
             chunk_extractions.append(extraction)
@@ -295,7 +298,7 @@ async def extract_strategy_from_text(content: str) -> ExtractedStrategy:
         return _merge_extractions(chunk_extractions)
     else:
         # Single extraction
-        prompt = EXTRACTION_PROMPT.format(content=content)
+        prompt = build_extraction_prompt(content)
         response = await _call_gemini(prompt)
         return _parse_extraction(response)
 

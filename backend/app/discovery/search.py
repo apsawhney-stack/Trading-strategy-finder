@@ -25,10 +25,11 @@ class DiscoveryResult(BaseModel):
 
 
 # Curated high-quality sources - organized by strategy
+# Using real video IDs where available, article URLs for other sources
 CURATED_SOURCES = {
     "credit_spreads": [
         {
-            "url": "https://www.youtube.com/watch?v=credit_spreads_tasty",
+            "url": "https://www.youtube.com/watch?v=t7gNLEGpK0I",  # tastytrade credit spreads
             "title": "Credit Spreads for Weekly Income - Complete Guide",
             "author": "tastytrade",
             "source_type": "youtube",
@@ -42,23 +43,23 @@ CURATED_SOURCES = {
             "quality": "high",
         },
         {
-            "url": "https://www.reddit.com/r/thetagang/comments/pcs_strategy/",
-            "title": "My PCS strategy that earns 20% annually",
-            "author": "u/thetawarrior",
+            "url": "https://www.reddit.com/r/thetagang/top/?t=year",
+            "title": "r/thetagang - Top Posts This Year",
+            "author": "r/thetagang",
             "source_type": "reddit",
             "quality": "medium",
         },
     ],
     "wheel_strategy": [
         {
-            "url": "https://www.youtube.com/watch?v=wheel_kamikaze",
-            "title": "The Wheel Strategy Explained | Kamikaze Cash",
-            "author": "Kamikaze Cash",
+            "url": "https://www.youtube.com/watch?v=siFsIleNTzk",  # InTheMoney Wheel
+            "title": "The Wheel Strategy Explained",
+            "author": "InTheMoney",
             "source_type": "youtube",
             "quality": "high",
         },
         {
-            "url": "https://www.youtube.com/watch?v=wheel_tasty",
+            "url": "https://www.youtube.com/watch?v=dRYBh6dtxjY",  # tastytrade Wheel  
             "title": "How to Trade the Wheel | tastytrade",
             "author": "tastytrade",
             "source_type": "youtube",
@@ -72,7 +73,7 @@ CURATED_SOURCES = {
             "quality": "high",
         },
         {
-            "url": "https://www.optionalpha.com/wheel-strategy-guide",
+            "url": "https://www.optionalpha.com/strategies/wheel-strategy",
             "title": "Complete Wheel Strategy Guide",
             "author": "Option Alpha",
             "source_type": "article",
@@ -81,53 +82,53 @@ CURATED_SOURCES = {
     ],
     "iron_condor": [
         {
-            "url": "https://www.youtube.com/watch?v=iron_condor_tasty",
+            "url": "https://www.youtube.com/watch?v=2Y4T0jP3rFE",  # tastytrade Iron Condor
             "title": "Iron Condors: Everything You Need to Know",
             "author": "tastytrade",
             "source_type": "youtube",
             "quality": "high",
         },
         {
-            "url": "https://www.youtube.com/watch?v=ic_management",
+            "url": "https://www.youtube.com/watch?v=81FqF9aJJQs",  # Option Alpha IC
             "title": "Managing Iron Condors: Adjust or Close?",
             "author": "Option Alpha",
             "source_type": "youtube",
             "quality": "high",
         },
         {
-            "url": "https://www.reddit.com/r/options/comments/iron_condor_tips/",
-            "title": "Iron Condor Tips from 5 Years of Trading",
-            "author": "u/ictrader5yr",
+            "url": "https://www.reddit.com/r/options/top/?t=year",
+            "title": "r/options - Top Posts This Year",
+            "author": "r/options",
             "source_type": "reddit",
             "quality": "medium",
         },
     ],
     "covered_calls": [
         {
-            "url": "https://www.youtube.com/watch?v=cc_basics",
+            "url": "https://www.youtube.com/watch?v=jnTsQBJHMSk",  # InTheMoney CC
             "title": "Covered Calls for Beginners | Complete Tutorial",
             "author": "InTheMoney",
             "source_type": "youtube",
             "quality": "high",
         },
         {
-            "url": "https://www.reddit.com/r/thetagang/comments/cc_income/",
-            "title": "Monthly Covered Call Income Strategy",
-            "author": "u/dividendwarrior",
+            "url": "https://www.reddit.com/r/dividends/top/?t=year",
+            "title": "r/dividends - Top Posts",
+            "author": "r/dividends",
             "source_type": "reddit",
             "quality": "medium",
         },
     ],
     "strangles": [
         {
-            "url": "https://www.youtube.com/watch?v=strangles_tasty",
+            "url": "https://www.youtube.com/watch?v=YS8_P3yebps",  # tastytrade strangles
             "title": "Short Strangles: The Core Strategy | tastytrade",
             "author": "tastytrade",
             "source_type": "youtube",
             "quality": "high",
         },
         {
-            "url": "https://www.youtube.com/watch?v=strangle_management",
+            "url": "https://www.youtube.com/watch?v=K2kfFbxPDso",  # tastytrade managing
             "title": "Managing Strangles in High IV",
             "author": "tastytrade",
             "source_type": "youtube",
