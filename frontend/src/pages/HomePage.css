@@ -71,6 +71,44 @@
     margin-bottom: var(--spacing-lg);
 }
 
+.sources-section {
+    margin-top: var(--spacing-lg);
+}
+
+.sources-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+}
+
+.sources-header h2 {
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.sources-count {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.sources-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.no-results {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+}
+
+.no-results p {
+    margin-bottom: var(--spacing-md);
+}
+
+/* Legacy - keep for strategy pages */
 .strategy-group {
     margin-bottom: var(--spacing-xl);
 }
@@ -94,10 +132,4 @@
 .btn-sm {
     padding: var(--spacing-xs) var(--spacing-sm);
     font-size: 12px;
-}
-
-.sources-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-md);
 }

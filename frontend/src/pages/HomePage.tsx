@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { Header } from '../components/Header';
 import { URLInput } from '../components/URLInput';
 import { SourceCard } from '../components/SourceCard';
 import { SourceDetail } from '../components/SourceDetail';
 import { ExtractionProgress } from '../components/ExtractionProgress';
 import { DiscoveryModal } from '../components/DiscoveryModal';
+import { FilterChips } from '../components/FilterChips';
+import type { Filters } from '../components/FilterChips';
 import { extractSource } from '../services/api';
 import { useSources } from '../hooks/useSources';
 import type { Source, ExtractionStep } from '../types';
@@ -23,23 +24,81 @@ export function HomePage() {
     const [selectedSource, setSelectedSource] = useState<Source | null>(null);
     const [showDiscovery, setShowDiscovery] = useState(false);
 
+    // Filter and sort state
+    const [filters, setFilters] = useState<Filters>({
+        underlying: [],
+        sourceType: [],
+        dte: [],
+    });
+    const [sortBy, setSortBy] = useState('specificity');
+
+    // Combine saved and session sources, deduping by ID
+    const allSources = useMemo(() => {
+        const combined = [...sessionSources];
+        savedSources.forEach(saved => {
+            if (!combined.some(s => s.id === saved.id)) {
+                combined.push(saved);
+            }
+        });
+        return combined;
+    }, [sessionSources, savedSources]);
+
+    // Apply filters
+    const filteredSources = useMemo(() => {
+        return allSources.filter(source => {
+            // Filter by underlying
+            if (filters.underlying.length > 0) {
+                const underlying = source.extracted_data?.setup_rules?.underlying?.value;
+                if (!underlying || !filters.underlying.includes(underlying)) return false;
+            }
+
+            // Filter by source type
+            if (filters.sourceType.length > 0) {
+                if (!filters.sourceType.includes(source.source_type)) return false;
+            }
+
+            // Filter by DTE
+            if (filters.dte.length > 0) {
+                const dte = source.extracted_data?.setup_rules?.dte?.value;
+                if (dte === undefined || dte === null || !filters.dte.includes(String(dte))) return false;
+            }
+
+            return true;
+        });
+    }, [allSources, filters]);
+
+    // Apply sorting
+    const sortedSources = useMemo(() => {
+        const sorted = [...filteredSources];
+        sorted.sort((a, b) => {
+            switch (sortBy) {
+                case 'specificity':
+                    return (b.quality_metrics?.specificity_score || 0) - (a.quality_metrics?.specificity_score || 0);
+                case 'trust':
+                    return (b.quality_metrics?.trust_score || 0) - (a.quality_metrics?.trust_score || 0);
+                case 'date':
+                    const dateA = a.published_date ? new Date(a.published_date).getTime() : 0;
+                    const dateB = b.published_date ? new Date(b.published_date).getTime() : 0;
+                    return dateB - dateA;
+                case 'title':
+                    const titleA = a.title || '';
+                    const titleB = b.title || '';
+                    return titleA.localeCompare(titleB);
+                default:
+                    return 0;
+            }
+        });
+        return sorted;
+    }, [filteredSources, sortBy]);
+
     // Handle source deletion
     const handleDelete = async (id: string): Promise<boolean> => {
         const success = await deleteSource(id);
         if (success) {
-            // Also remove from session sources if present
             setSessionSources(prev => prev.filter(s => s.id !== id));
         }
         return success;
     };
-
-    // Combine saved and session sources, deduping by ID
-    const allSources = [...sessionSources];
-    savedSources.forEach(saved => {
-        if (!allSources.some(s => s.id === saved.id)) {
-            allSources.push(saved);
-        }
-    });
 
     const handleExtract = async (url: string) => {
         setIsExtracting(true);
@@ -69,7 +128,6 @@ export function HomePage() {
             if (result.success && result.source) {
                 setCurrentStep('complete');
                 setSessionSources(prev => [result.source!, ...prev]);
-                // Refresh saved sources to include newly saved source
                 refreshSources();
             } else {
                 setError(result.error || 'Extraction failed');
@@ -86,16 +144,6 @@ export function HomePage() {
             await handleExtract(url);
         }
     };
-
-    // Group sources by strategy type
-    const strategyGroups = allSources.reduce((acc, source) => {
-        const strategyName = source.extracted_data?.strategy_name?.value || 'Other';
-        if (!acc[strategyName]) {
-            acc[strategyName] = [];
-        }
-        acc[strategyName].push(source);
-        return acc;
-    }, {} as Record<string, Source[]>);
 
     return (
         <div className="home-page">
@@ -143,34 +191,43 @@ export function HomePage() {
                             </div>
                         </section>
                     ) : (
-                        <>
-                            {Object.entries(strategyGroups).map(([strategyName, groupSources]) => (
-                                <section key={strategyName} className="strategy-group">
-                                    <div className="group-header">
-                                        <h2>{strategyName}</h2>
-                                        <span className="group-count">{groupSources.length} sources</span>
-                                        {groupSources.length >= 2 && (
-                                            <Link
-                                                to={`/strategy/${encodeURIComponent(strategyName)}`}
-                                                className="btn btn-secondary btn-sm"
-                                            >
-                                                View Consensus →
-                                            </Link>
-                                        )}
-                                    </div>
-                                    <div className="sources-list">
-                                        {groupSources.map(source => (
-                                            <SourceCard
-                                                key={source.id}
-                                                source={source}
-                                                onClick={() => setSelectedSource(source)}
-                                                onDelete={handleDelete}
-                                            />
-                                        ))}
-                                    </div>
-                                </section>
-                            ))}
-                        </>
+                        <section className="sources-section">
+                            <div className="sources-header">
+                                <h2>Your Sources</h2>
+                                <span className="sources-count">{sortedSources.length} of {allSources.length}</span>
+                            </div>
+
+                            <FilterChips
+                                sources={allSources}
+                                filters={filters}
+                                onFilterChange={setFilters}
+                                sortBy={sortBy}
+                                onSortChange={setSortBy}
+                            />
+
+                            <div className="sources-list">
+                                {sortedSources.map(source => (
+                                    <SourceCard
+                                        key={source.id}
+                                        source={source}
+                                        onClick={() => setSelectedSource(source)}
+                                        onDelete={handleDelete}
+                                    />
+                                ))}
+                            </div>
+
+                            {sortedSources.length === 0 && allSources.length > 0 && (
+                                <div className="no-results">
+                                    <p>No sources match your filters.</p>
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => setFilters({ underlying: [], sourceType: [], dte: [] })}
+                                    >
+                                        Clear Filters
+                                    </button>
+                                </div>
+                            )}
+                        </section>
                     )}
                 </div>
             </main>

@@ -7,29 +7,21 @@ interface SourceCardProps {
     source: Source;
     onClick?: () => void;
     onDelete?: (id: string) => Promise<boolean>;
+    defaultExpanded?: boolean;
 }
 
-export function SourceCard({ source, onClick, onDelete }: SourceCardProps) {
+export function SourceCard({ source, onClick, onDelete, defaultExpanded = false }: SourceCardProps) {
     const { extracted_data: data, quality_metrics: quality } = source;
+    const [isExpanded, setIsExpanded] = useState(defaultExpanded);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
     const sourceIcon = {
         youtube: '📹',
-        reddit: '📄',
-        article: '🌐',
-    }[source.source_type];
+        reddit: '💬',
+        article: '📰',
+    }[source.source_type] || '📄';
 
-    const formatDate = (dateStr: string | null) => {
-        if (!dateStr) return null;
-        return new Date(dateStr).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
-        });
-    };
-
-    // Format DTE nicely
     const formatDTE = (dte: number | string | null | undefined) => {
         if (dte === null || dte === undefined) return null;
         const val = typeof dte === 'string' ? parseInt(dte) : dte;
@@ -38,12 +30,16 @@ export function SourceCard({ source, onClick, onDelete }: SourceCardProps) {
         return `${val} DTE`;
     };
 
-    // Format delta nicely
     const formatDelta = (delta: number | string | null | undefined) => {
         if (delta === null || delta === undefined) return null;
         const val = typeof delta === 'string' ? parseFloat(delta) : delta;
         if (isNaN(val)) return String(delta);
         return val < 1 ? `${Math.round(val * 100)}Δ` : `${val}Δ`;
+    };
+
+    const handleToggle = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setIsExpanded(!isExpanded);
     };
 
     const handleDeleteClick = (e: React.MouseEvent) => {
@@ -54,14 +50,10 @@ export function SourceCard({ source, onClick, onDelete }: SourceCardProps) {
     const handleConfirmDelete = async (e: React.MouseEvent) => {
         e.stopPropagation();
         if (!onDelete) return;
-
         setIsDeleting(true);
         const success = await onDelete(source.id);
         setIsDeleting(false);
-
-        if (!success) {
-            setShowDeleteConfirm(false);
-        }
+        if (!success) setShowDeleteConfirm(false);
     };
 
     const handleCancelDelete = (e: React.MouseEvent) => {
@@ -69,122 +61,134 @@ export function SourceCard({ source, onClick, onDelete }: SourceCardProps) {
         setShowDeleteConfirm(false);
     };
 
+    // Get underlying for badge display
+    const underlying = data?.setup_rules?.underlying?.value;
+    const dte = data?.setup_rules?.dte?.value;
+
     return (
-        <div className="source-card card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
-            <div className="source-header">
-                <div className="source-info">
-                    <span className="source-icon">{sourceIcon}</span>
-                    <div className="source-meta">
-                        <h4 className="source-title">{source.title || data.strategy_name?.value || 'Unknown Strategy'}</h4>
-                        <span className="source-author text-muted">{source.author || 'Unknown Author'}</span>
-                    </div>
-                </div>
-                <div className="source-scores">
-                    <ScoreBadge label="Spec" score={quality.specificity_score} />
-                    <ScoreBadge label="Trust" score={quality.trust_score} />
-                </div>
-            </div>
+        <div className={`source-card card ${isExpanded ? 'expanded' : 'collapsed'}`}>
+            {/* Collapsed Header - Always Visible */}
+            <div className="card-header" onClick={handleToggle}>
+                <button className="expand-btn" aria-label={isExpanded ? 'Collapse' : 'Expand'}>
+                    <span className={`chevron ${isExpanded ? 'up' : 'down'}`}>▼</span>
+                </button>
 
-            {/* Strategy details in a clean grid */}
-            <div className="source-details">
-                <div className="detail-grid">
-                    {data.setup_rules?.underlying?.value && (
-                        <div className="detail-item">
-                            <span className="data-label">Underlying</span>
-                            <span className="data-value highlight">{data.setup_rules.underlying.value}</span>
-                        </div>
-                    )}
-                    {data.setup_rules?.dte?.value !== undefined && data.setup_rules?.dte?.value !== null && (
-                        <div className="detail-item">
-                            <span className="data-label">Expiration</span>
-                            <span className="data-value">{formatDTE(data.setup_rules.dte.value)}</span>
-                        </div>
-                    )}
-                    {data.setup_rules?.delta?.value && (
-                        <div className="detail-item">
-                            <span className="data-label">Delta</span>
-                            <span className="data-value">{formatDelta(data.setup_rules.delta.value)}</span>
-                        </div>
-                    )}
-                    {data.management_rules?.profit_target?.value && (
-                        <div className="detail-item">
-                            <span className="data-label">Target</span>
-                            <span className="data-value success">{data.management_rules.profit_target.value}</span>
-                        </div>
-                    )}
-                    {data.management_rules?.stop_loss?.value && (
-                        <div className="detail-item">
-                            <span className="data-label">Stop</span>
-                            <span className="data-value danger">{data.management_rules.stop_loss.value}</span>
-                        </div>
-                    )}
-                </div>
-            </div>
+                <span className="source-icon">{sourceIcon}</span>
 
-            {/* Key insights first - more valuable than gaps */}
-            {data.key_insights?.length > 0 && (
-                <div className="source-insights">
-                    <span className="data-label">💡 Key Insights</span>
-                    <ul className="insights-list">
-                        {data.key_insights.slice(0, 2).map((insight, i) => (
-                            <li key={i}>{insight}</li>
-                        ))}
-                    </ul>
+                <div className="card-title-section">
+                    <h4 className="card-title">{source.title || data?.strategy_name?.value || 'Unknown Strategy'}</h4>
+                    <span className="card-author">{source.author || 'Unknown'}</span>
                 </div>
-            )}
 
-            {/* Gaps as warnings */}
-            {quality.gaps.length > 0 && (
-                <div className="source-gaps">
-                    <span className="data-label">⚠️ Missing Info</span>
-                    <div className="gaps-list">
-                        {quality.gaps.slice(0, 3).map((gap, i) => (
-                            <span key={i} className="gap-tag">{gap}</span>
-                        ))}
-                    </div>
+                {/* Quick badges in collapsed view */}
+                <div className="quick-badges">
+                    {underlying && <span className="badge badge-underlying">{underlying}</span>}
+                    {dte !== undefined && dte !== null && <span className="badge badge-dte">{formatDTE(dte)}</span>}
                 </div>
-            )}
 
-            <div className="source-footer">
-                <span className="text-muted">
-                    {formatDate(source.published_date)}
-                    {source.platform_metrics?.views && ` • ${source.platform_metrics.views.toLocaleString()} views`}
-                    {source.platform_metrics?.upvotes && ` • ${source.platform_metrics.upvotes} upvotes`}
-                </span>
-                <div className="source-actions">
+                <div className="card-scores">
+                    <ScoreBadge label="Spec" score={quality?.specificity_score || 0} />
+                    <ScoreBadge label="Trust" score={quality?.trust_score || 0} />
+                </div>
+
+                {/* Actions in header when collapsed */}
+                <div className="card-actions">
                     {onDelete && !showDeleteConfirm && (
-                        <button
-                            className="btn-icon btn-delete"
-                            onClick={handleDeleteClick}
-                            title="Delete source"
-                        >
+                        <button className="btn-icon btn-delete" onClick={handleDeleteClick} title="Delete">
                             🗑️
                         </button>
                     )}
                     {showDeleteConfirm && (
-                        <div className="delete-confirm">
-                            <span className="confirm-text">Delete?</span>
-                            <button
-                                className="btn-confirm btn-yes"
-                                onClick={handleConfirmDelete}
-                                disabled={isDeleting}
-                            >
-                                {isDeleting ? '...' : 'Yes'}
+                        <div className="delete-confirm" onClick={e => e.stopPropagation()}>
+                            <button className="btn-confirm btn-yes" onClick={handleConfirmDelete} disabled={isDeleting}>
+                                {isDeleting ? '...' : '✓'}
                             </button>
-                            <button
-                                className="btn-confirm btn-no"
-                                onClick={handleCancelDelete}
-                                disabled={isDeleting}
-                            >
-                                No
+                            <button className="btn-confirm btn-no" onClick={handleCancelDelete} disabled={isDeleting}>
+                                ✗
                             </button>
                         </div>
                     )}
-                    <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link" onClick={e => e.stopPropagation()}>
-                        View Source →
+                    <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-icon btn-link"
+                        onClick={e => e.stopPropagation()}
+                        title="View source"
+                    >
+                        ↗
                     </a>
                 </div>
             </div>
+
+            {/* Expanded Content */}
+            {isExpanded && (
+                <div className="card-body" onClick={onClick}>
+                    {/* Strategy Parameters Grid */}
+                    <div className="params-grid">
+                        {underlying && (
+                            <div className="param-item">
+                                <span className="param-label">Underlying</span>
+                                <span className="param-value highlight">{underlying}</span>
+                            </div>
+                        )}
+                        {dte !== undefined && dte !== null && (
+                            <div className="param-item">
+                                <span className="param-label">DTE</span>
+                                <span className="param-value">{formatDTE(dte)}</span>
+                            </div>
+                        )}
+                        {data?.setup_rules?.delta?.value && (
+                            <div className="param-item">
+                                <span className="param-label">Delta</span>
+                                <span className="param-value">{formatDelta(data.setup_rules.delta.value)}</span>
+                            </div>
+                        )}
+                        {data?.setup_rules?.width?.value && (
+                            <div className="param-item">
+                                <span className="param-label">Width</span>
+                                <span className="param-value">{data.setup_rules.width.value} pts</span>
+                            </div>
+                        )}
+                        {data?.management_rules?.profit_target?.value && (
+                            <div className="param-item">
+                                <span className="param-label">Target</span>
+                                <span className="param-value success">{data.management_rules.profit_target.value}</span>
+                            </div>
+                        )}
+                        {data?.management_rules?.stop_loss?.value && (
+                            <div className="param-item">
+                                <span className="param-label">Stop</span>
+                                <span className="param-value danger">{data.management_rules.stop_loss.value}</span>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Key Insights */}
+                    {data?.key_insights && data.key_insights.length > 0 && (
+                        <div className="insights-section">
+                            <span className="section-label">💡 Key Insights</span>
+                            <ul className="insights-list">
+                                {data.key_insights.slice(0, 3).map((insight, i) => (
+                                    <li key={i}>{insight}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
+                    {/* Gaps/Warnings */}
+                    {quality?.gaps && quality.gaps.length > 0 && (
+                        <div className="gaps-section">
+                            <span className="section-label">⚠️ Missing Info</span>
+                            <div className="gaps-list">
+                                {quality.gaps.slice(0, 4).map((gap, i) => (
+                                    <span key={i} className="gap-tag">{gap}</span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
         </div>
     );
 }
