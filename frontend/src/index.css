@@ -9,44 +9,44 @@
   --bg-secondary: #12121a;
   --bg-elevated: #1a1a25;
   --bg-hover: #22222f;
-  
+
   /* Accents */
   --accent-primary: #3b82f6;
   --accent-primary-hover: #2563eb;
   --accent-success: #10b981;
   --accent-warning: #f59e0b;
   --accent-danger: #ef4444;
-  
+
   /* Text */
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  
+
   /* Borders */
   --border-subtle: #1e293b;
   --border-normal: #334155;
-  
+
   /* Scores */
   --score-high: #10b981;
   --score-medium: #f59e0b;
   --score-low: #ef4444;
-  
+
   /* Fonts */
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
-  
+
   /* Spacing */
   --spacing-xs: 4px;
   --spacing-sm: 8px;
   --spacing-md: 16px;
   --spacing-lg: 24px;
   --spacing-xl: 32px;
-  
+
   /* Border radius */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
-  
+
   /* Transitions */
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
@@ -58,7 +58,8 @@
   box-sizing: border-box;
 }
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -81,18 +82,39 @@ body {
    Typography
    ============================================================================ */
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-weight: 600;
   line-height: 1.2;
 }
 
-h1 { font-size: 2rem; }
-h2 { font-size: 1.5rem; }
-h3 { font-size: 1.25rem; }
-h4 { font-size: 1rem; }
+h1 {
+  font-size: 2rem;
+}
 
-.text-muted { color: var(--text-muted); }
-.text-secondary { color: var(--text-secondary); }
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1rem;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
 
 /* Data values use monospace */
 .data-value {
@@ -245,20 +267,23 @@ h4 { font-size: 1rem; }
    ============================================================================ */
 
 .skeleton {
-  background: linear-gradient(
-    90deg,
-    var(--bg-elevated) 25%,
-    var(--bg-hover) 50%,
-    var(--bg-elevated) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--bg-elevated) 25%,
+      var(--bg-hover) 50%,
+      var(--bg-elevated) 75%);
   background-size: 200% 100%;
   animation: skeleton-loading 1.5s infinite;
   border-radius: var(--radius-sm);
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 .spinner {
@@ -271,7 +296,9 @@ h4 { font-size: 1rem; }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ============================================================================
@@ -307,17 +334,193 @@ h4 { font-size: 1rem; }
    Utility Classes
    ============================================================================ */
 
-.flex { display: flex; }
-.flex-col { flex-direction: column; }
-.items-center { align-items: center; }
-.justify-between { justify-content: space-between; }
-.gap-sm { gap: var(--spacing-sm); }
-.gap-md { gap: var(--spacing-md); }
-.gap-lg { gap: var(--spacing-lg); }
+.flex {
+  display: flex;
+}
 
-.mt-md { margin-top: var(--spacing-md); }
-.mb-md { margin-bottom: var(--spacing-md); }
-.ml-auto { margin-left: auto; }
+.flex-col {
+  flex-direction: column;
+}
 
-.w-full { width: 100%; }
-.text-center { text-align: center; }
+.items-center {
+  align-items: center;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.gap-sm {
+  gap: var(--spacing-sm);
+}
+
+.gap-md {
+  gap: var(--spacing-md);
+}
+
+.gap-lg {
+  gap: var(--spacing-lg);
+}
+
+.mt-md {
+  margin-top: var(--spacing-md);
+}
+
+.mb-md {
+  margin-bottom: var(--spacing-md);
+}
+
+.ml-auto {
+  margin-left: auto;
+}
+
+.w-full {
+  width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ============================================================================
+   Micro-Animations
+   ============================================================================ */
+
+/* Card hover lift effect */
+.card {
+  transition: transform var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Button press effect */
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Focus ring for keyboard navigation */
+.btn:focus-visible,
+.input:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.2s ease-out;
+}
+
+/* Slide up animation */
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Scale in animation */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* ============================================================================
+   Responsive Breakpoints
+   ============================================================================ */
+
+@media (max-width: 1024px) {
+  .container {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --spacing-lg: 20px;
+    --spacing-xl: 28px;
+  }
+
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  h2 {
+    font-size: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --spacing-md: 12px;
+    --spacing-lg: 16px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .btn {
+    padding: var(--spacing-sm);
+    font-size: 13px;
+  }
+
+  .input {
+    padding: var(--spacing-sm);
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+
+  .btn,
+  .toast-container {
+    display: none;
+  }
+}
