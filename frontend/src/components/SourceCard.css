@@ -1,0 +1,128 @@
+.source-card {
+    transition: border-color var(--transition-fast);
+}
+
+.source-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--spacing-md);
+}
+
+.source-info {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.source-icon {
+    font-size: 1.5rem;
+}
+
+.source-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.source-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.source-author {
+    font-size: 0.875rem;
+}
+
+.source-scores {
+    display: flex;
+    gap: var(--spacing-sm);
+}
+
+.source-strategy {
+    margin-bottom: var(--spacing-md);
+    padding-bottom: var(--spacing-md);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.source-strategy .data-value {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.source-details {
+    margin-bottom: var(--spacing-md);
+}
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: var(--spacing-md);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.detail-item .data-label {
+    font-size: 10px;
+}
+
+.detail-item .data-value {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.source-gaps {
+    margin-bottom: var(--spacing-md);
+}
+
+.gaps-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xs);
+    margin-top: var(--spacing-xs);
+}
+
+.gap-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: 9999px;
+    color: var(--accent-warning);
+}
+
+.source-insights {
+    margin-bottom: var(--spacing-md);
+}
+
+.insights-list {
+    margin-top: var(--spacing-xs);
+    padding-left: var(--spacing-md);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.insights-list li {
+    margin-bottom: var(--spacing-xs);
+}
+
+.source-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-md);
+    border-top: 1px solid var(--border-subtle);
+    font-size: 13px;
+}
+
+.source-link {
+    color: var(--accent-primary);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.source-link:hover {
+    text-decoration: underline;
+}

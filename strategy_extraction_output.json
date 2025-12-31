@@ -1,0 +1,70 @@
+{
+  "video_id": "55ox9fB3x-E",
+  "video_url": "https://youtu.be/55ox9fB3x-E",
+  "transcript_length": 22520,
+  "extraction_method": "gemini",
+  "extracted_data": {
+    "strategy_overview": {
+      "name": "ATM Put Credit Spreads on SPX (Pullback Strategy)",
+      "one_liner": "Selling at-the-money put credit spreads on the S&P 500 (SPX) with 5-7 DTE, targeting pullbacks using the 20 EMA as a guideline, aiming for consistent premium capture with defined risk.",
+      "trader_name": "Robert Mintosh",
+      "experience_level": "Approximately 9 months in options trading (started March, interview in December); prior experience in stocks, futures, forex for 20+ years."
+    },
+    "setup_rules": {
+      "underlying": "S&P 500 (SPX)",
+      "option_type": "Put Credit Spreads",
+      "strike_selection": "Sell 'at the money' put, buy a put 10 points further out (sometimes 15 points).",
+      "expiration": "5 to 7 DTE (days to expiration)",
+      "position_sizing": "Generally one to three contracts (mostly two overlapping). Limits to 1-2 trades per week to avoid overexposure. Increases contract size for every $10,000 in account growth.",
+      "entry_criteria": "Discretionary. Looks for pullbacks on the S&P 500 daily chart. Uses a 20 EMA (Exponential Moving Average) as a guideline. Enters when price has extended 'too far too quickly' above the 20 EMA (e.g., up more than 1%) and then pulls back. If the price pulls back hard and goes below the 20 EMA, he waits for the first recovery day before entering. More aggressive (extra contract) if it pulls back to the 20 EMA.",
+      "time_of_day": "Null (Implies daily analysis for entry conditions)"
+    },
+    "management_rules": {
+      "profit_target": "Likes to let trades expire to capture full premium, especially if well out of the money. Does not have a specific percentage target (e.g., 50% or 75%).",
+      "stop_loss": "No strict stop-loss rules mentioned. On expiration day, if a trade is going against him, he tries to let it ride until about noon. If it doesn't recover, he attempts to close it around 1 PM. Acknowledges he 'should be better at doing stop losses.'",
+      "adjustment_rules": "Generally does not roll positions. Prefers to close a losing trade and open a new one, finding it easier to manage.",
+      "hold_to_expiration": "Yes, if the trade is well out of the money with 'almost no chance' of going against him on the last day.",
+      "rolling_rules": "Rarely rolls. Has rolled 'a couple trades' but mostly just closes and re-enters."
+    },
+    "risk_profile": {
+      "max_loss_per_trade": "$650 (for a 10-point spread with $350 credit received).",
+      "win_rate_claimed": "71% (based on ~50 trades since June).",
+      "risk_reward_ratio": "Approximately 1.85:1 to 2:1 risk to reward (e.g., risking $650 to make $350).",
+      "account_drawdown_mentioned": "Experienced difficulty and losses during choppy market conditions (e.g., last week of October / first two weeks of November). Warns against getting 'too aggressive' and being overexposed with multiple trades expiring in a bad week, leading to multiple losses."
+    },
+    "performance_claims": {
+      "starting_capital": "$3,200 (in March). Account was about $4,000 when he started trading credit spreads.",
+      "current_capital": "$12,000 (as of Friday, December).",
+      "total_return_percent": "Account grew from $3,200 to $12,000 (approx. 275% net gain). Has 'made a little over $18,000' gross profits. Host states he increased account 'fivefold'.",
+      "time_period": "9 months (March to December) for overall options trading. ~5-6 months (June to December) for credit spread strategy performance.",
+      "profits_withdrawn": "Yes, has 'pulled some money out in the last couple months.'"
+    },
+    "key_insights": [
+      "Simpler strategies (like spreads) are better for small accounts and beginners, as they are 'easy to reason about' and require less attention to Greeks or technical analysis.",
+      "Trading on SPX (cash-settled) avoids assignment worries and allows trades to run to full expiration.",
+      "SPX/SPY tends to go up over time and is less volatile than individual stocks, making analysis easier.",
+      "Using EMA as a flexible 'guideline' for market pullbacks rather than a rigid 'hard rule'.",
+      "Aggression (e.g., higher contract count) can be helpful for rapid growth with a small account, but requires discipline.",
+      "Defined risk of spreads helps manage potential losses, even with overnight gaps.",
+      "Closing losing trades and re-entering new ones is preferred over complex rolling adjustments for a new trader.",
+      "A tight 10-point spread provides sufficient margin and manageable max loss relative to potential profit."
+    ],
+    "warnings_and_risks": [
+      "Over-leveraging or being 'too exposed' (too many trades, or increasing contract size too much) is the 'worst thing that can happen', especially if multiple trades expire in a week where the market tanks.",
+      "Sudden, big overnight drops (gaps) can be frustrating, though the S&P tends to be 'relatively mild' compared to individual stocks.",
+      "Choppy market conditions can make it difficult to manage trades and lead to losses.",
+      "Lack of strict stop-loss discipline can allow losses to escalate."
+    ],
+    "quotes": [
+      "\"I sell at the money put credit spreads. Started with $3,200 in March and as of Friday, the account is at 12,000, but I've made a little over 18 uh and I've pulled some money out.\"",
+      "\"a lot of those strategies weren't really helpful for a small account or they would take a really long time to get anywhere. So, I started in with the credit spreads. They were very easy to reason about.\"",
+      "\"I'm only trading on the S&P right now. I didn't have to worry about getting out of the trade and closing and worrying about pattern day trading rules and things like that.\"",
+      "\"My goal with a really small account was to grow it up fairly quickly and then start to kind of back off and go more into capital preservation mode as opposed to very aggressive.\"",
+      "\"My general rule of thumb is on the S&P, if it's up more than 1% above that um 20 EMA line, then it's probably going to come back down at some point within the next few days.\"",
+      "\"I usually just go ahead and and close it [a losing trade]. Have rolled a couple trades, but for the most part, I just close it and when I am closing it, it that also is usually another buying opportunity or selling opportunity. And so I'll just close it and enter in a another trade.\"",
+      "\"The worst thing that can happen happened to me a couple times where I got too aggressive and I was too exposed within a given week on an individual trade.\"",
+      "\"I would probably put it [risk profile] at a three. I think for a beginner, probably a three or four. And as you get a little more experience or uh the more disciplined you are, then it's probably closer to a two.\"",
+      "\"I think it's really suited for beginners in options because you don't really have to uh dive into the the Greeks... it's easier to reason about for a new trader.\""
+    ]
+  }
+}

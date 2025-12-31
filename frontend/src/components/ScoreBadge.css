@@ -1,0 +1,36 @@
+.score-badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: var(--radius-sm);
+    min-width: 50px;
+}
+
+.score-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.8;
+}
+
+.score-value {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.score-high {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--score-high);
+}
+
+.score-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--score-medium);
+}
+
+.score-low {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--score-low);
+}
