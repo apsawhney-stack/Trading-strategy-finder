@@ -1,0 +1,142 @@
+.backtestability-card {
+    background: var(--bg-elevated);
+    border-radius: var(--radius-md);
+    padding: var(--spacing-md);
+}
+
+.backtest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-md);
+}
+
+.backtest-header h4 {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+.backtest-score {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: var(--radius-md);
+}
+
+.backtest-score.score-high {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--score-high);
+}
+
+.backtest-score.score-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--score-medium);
+}
+
+.backtest-score.score-low {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--score-low);
+}
+
+.param-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    margin-bottom: var(--spacing-md);
+}
+
+.param-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+}
+
+.param-item.present {
+    color: var(--text-primary);
+}
+
+.param-item.missing {
+    color: var(--text-muted);
+}
+
+.param-icon {
+    width: 16px;
+    text-align: center;
+}
+
+.param-item.present .param-icon {
+    color: var(--score-high);
+}
+
+.param-label {
+    font-size: 12px;
+    flex: 1;
+}
+
+.param-value {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+.platform-matches h5 {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: var(--spacing-sm);
+}
+
+.platform-item {
+    display: grid;
+    grid-template-columns: 90px 1fr 40px;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-xs);
+}
+
+.platform-name {
+    font-size: 12px;
+    text-transform: capitalize;
+}
+
+.platform-bar {
+    height: 6px;
+    background: var(--bg-primary);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.platform-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.platform-fill.high {
+    background: var(--score-high);
+}
+
+.platform-fill.medium {
+    background: var(--score-medium);
+}
+
+.platform-fill.low {
+    background: var(--score-low);
+}
+
+.platform-score {
+    font-size: 11px;
+    font-family: var(--font-mono);
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.backtest-warning {
+    margin-top: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: rgba(245, 158, 11, 0.1);
+    border-radius: var(--radius-sm);
+    font-size: 12px;
+    color: var(--accent-warning);
+}
