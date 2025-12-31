@@ -193,27 +193,27 @@
 
 .params-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 16px;
-    padding: 16px 0;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+    padding: 20px 0;
 }
 
 .param-item {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
 }
 
 .param-label {
-    font-size: 10px;
+    font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: rgba(255, 255, 255, 0.4);
 }
 
 .param-value {
-    font-size: 14px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     color: #fff;
 }
 

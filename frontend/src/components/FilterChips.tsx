@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import type { Source } from '../types';
 import './FilterChips.css';
 
@@ -17,6 +17,13 @@ interface FilterChipsProps {
     onSortChange: (sortBy: string) => void;
 }
 
+const SORT_OPTIONS = [
+    { value: 'specificity', label: 'Specificity ↓' },
+    { value: 'trust', label: 'Trust ↓' },
+    { value: 'date', label: 'Date ↓' },
+    { value: 'title', label: 'Title A-Z' },
+];
+
 export function FilterChips({
     sources,
     filters,
@@ -24,6 +31,20 @@ export function FilterChips({
     sortBy,
     onSortChange
 }: FilterChipsProps) {
+    const [sortOpen, setSortOpen] = useState(false);
+    const sortRef = useRef<HTMLDivElement>(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+                setSortOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
     // Extract unique values from sources
     const { underlyings, sourceTypes, dtes } = useMemo(() => {
         const underlyings = new Set<string>();
@@ -61,6 +82,11 @@ export function FilterChips({
         onFilterChange({ ...filters, search: e.target.value });
     };
 
+    const handleSortSelect = (value: string) => {
+        onSortChange(value);
+        setSortOpen(false);
+    };
+
     const sourceTypeLabels: Record<string, string> = {
         youtube: 'YouTube',
         reddit: 'Reddit',
@@ -71,6 +97,8 @@ export function FilterChips({
         const val = parseInt(dte);
         return `${val} DTE`;
     };
+
+    const currentSortLabel = SORT_OPTIONS.find(o => o.value === sortBy)?.label || 'Sort';
 
     return (
         <div className="filter-bar">
@@ -140,19 +168,30 @@ export function FilterChips({
                 {/* Spacer */}
                 <div className="chip-spacer" />
 
-                {/* Sort Dropdown */}
-                <div className="sort-container">
+                {/* Custom Sort Dropdown */}
+                <div className="sort-container" ref={sortRef}>
                     <span className="sort-label">Sort:</span>
-                    <select
-                        className="sort-select"
-                        value={sortBy}
-                        onChange={e => onSortChange(e.target.value)}
+                    <button
+                        className={`sort-button ${sortOpen ? 'open' : ''}`}
+                        onClick={() => setSortOpen(!sortOpen)}
                     >
-                        <option value="specificity">Specificity ↓</option>
-                        <option value="trust">Trust ↓</option>
-                        <option value="date">Date ↓</option>
-                        <option value="title">Title A-Z</option>
-                    </select>
+                        {currentSortLabel}
+                        <span className="sort-chevron">▼</span>
+                    </button>
+                    {sortOpen && (
+                        <div className="sort-dropdown">
+                            {SORT_OPTIONS.map(option => (
+                                <button
+                                    key={option.value}
+                                    className={`sort-option ${sortBy === option.value ? 'active' : ''}`}
+                                    onClick={() => handleSortSelect(option.value)}
+                                >
+                                    {sortBy === option.value && <span className="check">✓</span>}
+                                    {option.label}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
