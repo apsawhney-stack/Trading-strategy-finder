@@ -4,9 +4,10 @@ import './SourceCard.css';
 
 interface SourceCardProps {
     source: Source;
+    onClick?: () => void;
 }
 
-export function SourceCard({ source }: SourceCardProps) {
+export function SourceCard({ source, onClick }: SourceCardProps) {
     const { extracted_data: data, quality_metrics: quality } = source;
 
     const sourceIcon = {
@@ -25,7 +26,7 @@ export function SourceCard({ source }: SourceCardProps) {
     };
 
     return (
-        <div className="source-card card">
+        <div className="source-card card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
             <div className="source-header">
                 <div className="source-info">
                     <span className="source-icon">{sourceIcon}</span>
@@ -113,7 +114,7 @@ export function SourceCard({ source }: SourceCardProps) {
                     {source.platform_metrics?.views && ` • ${source.platform_metrics.views.toLocaleString()} views`}
                     {source.platform_metrics?.upvotes && ` • ${source.platform_metrics.upvotes} upvotes`}
                 </span>
-                <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link">
+                <a href={source.url} target="_blank" rel="noopener noreferrer" className="source-link" onClick={e => e.stopPropagation()}>
                     View Source →
                 </a>
             </div>

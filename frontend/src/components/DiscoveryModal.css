@@ -1,0 +1,200 @@
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: var(--spacing-md);
+}
+
+.discovery-modal {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.discovery-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.discovery-header h2 {
+    font-size: 1.25rem;
+}
+
+.discovery-search {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+}
+
+.search-input {
+    flex: 1;
+}
+
+.platform-filters {
+    display: flex;
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-lg) var(--spacing-md);
+}
+
+.platform-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    cursor: pointer;
+}
+
+.platform-toggle input {
+    cursor: pointer;
+}
+
+.platform-label {
+    font-size: 13px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.platform-youtube {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.platform-reddit {
+    background: rgba(255, 69, 0, 0.1);
+}
+
+.platform-web {
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.discovery-error {
+    margin: 0 var(--spacing-lg);
+    padding: var(--spacing-sm);
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--accent-danger);
+    font-size: 13px;
+}
+
+.candidates-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 var(--spacing-lg);
+}
+
+.candidates-empty {
+    text-align: center;
+    padding: var(--spacing-xl);
+    color: var(--text-muted);
+}
+
+.candidates-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--spacing-sm);
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.btn-link:hover {
+    text-decoration: underline;
+}
+
+.candidates-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+}
+
+.candidate-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm);
+    background: var(--bg-elevated);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.candidate-item:hover {
+    border-color: var(--border-normal);
+}
+
+.candidate-item.selected {
+    border-color: var(--accent-primary);
+    background: rgba(59, 130, 246, 0.1);
+}
+
+.candidate-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.candidate-title {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.candidate-author {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.tier-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.tier-high {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--score-high);
+}
+
+.tier-medium {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--score-medium);
+}
+
+.tier-low {
+    background: rgba(100, 116, 139, 0.15);
+    color: var(--text-muted);
+}
+
+.discovery-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--border-subtle);
+}

@@ -217,6 +217,24 @@
     flex-direction: column;
 }
 
+.scores-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+.scores-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--spacing-md);
+}
+
+@media (max-width: 700px) {
+    .scores-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
 .insight-block.warnings {
     border-left: 3px solid var(--accent-warning);
 }

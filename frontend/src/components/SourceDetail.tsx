@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import type { Source, ExtractedField, ExtractedNumericField } from '../types';
 import { ScoreBadge } from './ScoreBadge';
+import { ScoreBreakdown } from './ScoreBreakdown';
+import { GapsList } from './GapsList';
+import { TrustScore } from './TrustScore';
 import './SourceDetail.css';
 
 interface SourceDetailProps {
@@ -51,7 +54,7 @@ function FieldValue({
 
 export function SourceDetail({ source, onClose }: SourceDetailProps) {
     const { extracted_data: data, quality_metrics: quality } = source;
-    const [activeTab, setActiveTab] = useState<'setup' | 'management' | 'risk' | 'insights'>('setup');
+    const [activeTab, setActiveTab] = useState<'setup' | 'management' | 'risk' | 'scores' | 'insights'>('setup');
 
     return (
         <div className="source-detail-overlay" onClick={onClose}>
@@ -69,7 +72,7 @@ export function SourceDetail({ source, onClose }: SourceDetailProps) {
                 </header>
 
                 <nav className="detail-tabs">
-                    {(['setup', 'management', 'risk', 'insights'] as const).map(tab => (
+                    {(['setup', 'management', 'risk', 'scores', 'insights'] as const).map(tab => (
                         <button
                             key={tab}
                             className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -145,6 +148,19 @@ export function SourceDetail({ source, onClose }: SourceDetailProps) {
                                     </div>
                                 </div>
                             )}
+                        </div>
+                    )}
+
+                    {activeTab === 'scores' && (
+                        <div className="scores-section">
+                            <div className="scores-grid">
+                                <ScoreBreakdown breakdown={quality.specificity_breakdown} />
+                                <TrustScore
+                                    score={quality.trust_score}
+                                    failureAnalysis={data.failure_analysis}
+                                />
+                            </div>
+                            <GapsList gaps={quality.gaps} />
                         </div>
                     )}
 

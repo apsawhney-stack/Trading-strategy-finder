@@ -1,6 +1,10 @@
 import './Header.css';
 
-export function Header() {
+interface HeaderProps {
+    onDiscoverClick?: () => void;
+}
+
+export function Header({ onDiscoverClick }: HeaderProps) {
     return (
         <header className="header">
             <div className="container header-content">
@@ -9,8 +13,8 @@ export function Header() {
                     <span className="logo-text">STRATEGY FINDER</span>
                 </div>
                 <nav className="nav">
-                    <button className="btn btn-secondary">
-                        <span>+</span> Add URL
+                    <button className="btn btn-secondary" onClick={onDiscoverClick}>
+                        <span>🔍</span> Discover
                     </button>
                 </nav>
             </div>
