@@ -102,10 +102,10 @@
     font-size: 13px;
 }
 
-/* Grid Layout for Cards - consistent column sizing */
+/* Single Column Layout for Cards */
 .sources-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    display: flex;
+    flex-direction: column;
     gap: 12px;
 }
 

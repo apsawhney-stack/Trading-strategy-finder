@@ -37,6 +37,31 @@ class YouTubeExtractor(BaseExtractor):
                 return match.group(1)
         return None
     
+    async def get_video_metadata(self, video_id: str) -> dict:
+        """Fetch video metadata (title, channel) from YouTube oEmbed API."""
+        import aiohttp
+        
+        oembed_url = f"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={video_id}&format=json"
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(oembed_url) as response:
+                    if response.status == 200:
+                        data = await response.json()
+                        return {
+                            "title": data.get("title", f"YouTube Video {video_id}"),
+                            "author": data.get("author_name", "Unknown Channel"),
+                            "author_url": data.get("author_url", ""),
+                        }
+        except Exception:
+            pass
+        
+        return {
+            "title": f"YouTube Video {video_id}",
+            "author": "Unknown Channel",
+            "author_url": "",
+        }
+    
     async def extract(self, url: str) -> ExtractionResult:
         """Extract transcript and strategy from YouTube video."""
         
@@ -49,6 +74,11 @@ class YouTubeExtractor(BaseExtractor):
             )
         
         try:
+            # Fetch real metadata (channel name, video title)
+            metadata = await self.get_video_metadata(video_id)
+            channel_name = metadata["author"]
+            video_title = metadata["title"]
+            
             # Fetch transcript using instance-based API (v1.2.x)
             api = YouTubeTranscriptApi()
             transcript_list = api.fetch(video_id)
@@ -57,23 +87,19 @@ class YouTubeExtractor(BaseExtractor):
             formatter = TextFormatter()
             transcript_text = formatter.format_transcript(transcript_list)
             
-            # Extract video metadata (simplified - would need YouTube Data API for full metadata)
-            title = f"YouTube Video {video_id}"  # Placeholder - enhance with YouTube Data API
-            author = "Unknown"  # Placeholder
-            
             # Run LLM extraction
             extracted_data = await extract_strategy_from_text(transcript_text)
             
-            # Update title/author from extraction if available
-            if extracted_data.trader_name.value:
-                author = extracted_data.trader_name.value
+            # Build display title - use strategy name if extracted, else video title
             if extracted_data.strategy_name.value:
-                title = f"{extracted_data.strategy_name.value} - {author}"
+                title = extracted_data.strategy_name.value
+            else:
+                title = video_title
             
             return ExtractionResult(
                 success=True,
                 title=title,
-                author=author,
+                author=channel_name,  # Use actual YouTube channel name
                 content=transcript_text,
                 platform_metrics=PlatformMetrics(),  # Would need YouTube Data API
                 extracted_data=extracted_data,
