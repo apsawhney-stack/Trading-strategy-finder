@@ -13,7 +13,7 @@
 
 .url-input {
     width: 100%;
-    padding: 14px 90px 14px 20px;
+    padding: 14px 50px 14px 20px;
     font-size: 14px;
     background: rgba(30, 41, 59, 0.7);
     backdrop-filter: blur(8px);
@@ -21,6 +21,10 @@
     border-radius: 12px;
     color: #fff;
     transition: all 0.2s;
+}
+
+.url-input.with-badge {
+    padding-right: 140px;
 }
 
 .url-input::placeholder {
@@ -36,7 +40,7 @@
 
 .source-badge {
     position: absolute;
-    right: 12px;
+    right: 48px;
     top: 50%;
     transform: translateY(-50%);
     font-size: 11px;
@@ -62,6 +66,37 @@
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2));
     color: #a5b4fc;
     border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.clear-btn {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 14px;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    padding: 0;
+}
+
+.clear-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+.clear-btn:focus-visible {
+    outline: 2px solid rgba(99, 102, 241, 0.5);
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
 }
 
 .extract-btn {
