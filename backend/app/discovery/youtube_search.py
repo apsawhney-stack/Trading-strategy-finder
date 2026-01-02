@@ -4,12 +4,108 @@ Searches for options trading strategy videos with quality scoring.
 """
 
 import os
+import re
 from datetime import datetime, timedelta
 from typing import List, Optional
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from app.discovery.trusted_channels import TRUSTED_YOUTUBE_CHANNELS, TRUSTED_CHANNEL_BOOST
+
+
+# ============================================================================
+# Strategy Keywords Configuration - Used to filter noise from search results
+# ============================================================================
+
+STRATEGY_KEYWORDS = {
+    # High signal keywords indicate specific, actionable strategy content (+15 points each)
+    "high_signal": [
+        # DTE patterns
+        "dte", "0dte", "0 dte", "1dte", "2dte", "3dte", "5dte", "7 dte", 
+        "14 dte", "21 dte", "30 dte", "45 dte", "expiration", "weeklies", "monthlies",
+        # Delta patterns
+        "delta", "10 delta", "16 delta", "20 delta", "25 delta", "30 delta",
+        ".10 delta", ".16 delta", ".20 delta", ".25 delta", ".30 delta", "delta neutral",
+        # Strategy structure
+        "strike", "strike width", "spread", "condor", "butterfly", "vertical",
+        "5 wide", "10 wide", "5 point", "10 point", "narrow spread", "wide spread",
+        "credit", "debit", "premium", "atm", "otm", "itm",
+        # Entry criteria
+        "entry rules", "entry criteria", "when to enter", "setup", "trade setup", "entry signal",
+        # Exit/Management
+        "profit target", "stop loss", "take profit", "exit rules", "close at",
+        "roll", "roll up", "roll down", "roll out", "adjustment", "manage", 
+        "manage losers", "defend",
+        # Position sizing
+        "position size", "risk per trade", "buying power", "account size", 
+        "allocation", "max loss", "risk management", "bp usage", "buying power reduction",
+        # Backtest/Evidence
+        "backtest", "backtested", "historical", "win rate", "success rate", 
+        "expectancy", "pnl", "track record",
+        # Greeks
+        "gamma", "theta decay", "vega", "rho", "iv", "implied volatility", 
+        "iv rank", "iv percentile",
+    ],
+    
+    # Medium signal keywords indicate strategy-related content (+8 points each)
+    "medium_signal": [
+        # Spread strategies
+        "put credit spread", "call credit spread", "bull put spread", "bear call spread",
+        "bull call spread", "bear put spread", "iron condor", "iron fly", "iron butterfly",
+        "calendar spread", "diagonal spread", "broken wing butterfly", "jade lizard",
+        "big lizard", "ratio spread", "back spread", "front spread", "skip strike butterfly",
+        # Other strategies
+        "wheel strategy", "covered call", "cash secured put", "protective put",
+        "strangle", "straddle", "pmcc", "poor mans covered call", "zebraspread",
+        "naked put", "naked call", "short put", "short call",
+        "defined risk", "undefined risk",
+        # Greeks
+        "theta", "gamma", "vega",
+        # Income focus
+        "sell premium", "collect premium", "income strategy", "weekly income", 
+        "monthly income", "consistent income",
+        "weekly options", "monthly options",
+        # Underlyings
+        "spx", "spy", "qqq", "iwm", "ndx", "rut", "vix",
+        "futures options", "/es", "/nq", "emini",
+        # Trusted sources
+        "tastytrade", "tasty", "option alpha", "tastylive",
+        "sky view trading", "smb capital", "inthemoney", "projectoption", "kamikaze cash",
+        # Platforms
+        "thinkorswim", "tos", "tastyworks", "schwab", "ibkr", "interactive brokers",
+    ],
+    
+    # Noise patterns indicate non-strategy content (-15 points each)
+    "noise_patterns": [
+        # Personal stories
+        "interview", "my journey", "how i started", "my story", "my first",
+        "i made", "i lost", "blew up", "account blowup", "day in my life",
+        "meet my", "how i became", "success story", "full time trader", "quit my job",
+        # Market commentary (not strategy)
+        "market update", "market news", "breaking news", "market prediction",
+        "stock picks", "earnings play",
+        # Reaction/entertainment content
+        "reaction", "reacting to", "day in the life", "vlog", "lifestyle",
+        # Beginner/educational (too basic)
+        "what is a", "what are", "explained simply", "explained in 5 minutes",
+        "for beginners", "beginner guide", "basics of", "beginner mistake",
+        "simple trick", "one simple", "avoid this", "why you're losing", "stop doing this",
+        # Clickbait phrases
+        "you won't believe", "secret", "shocking", "this will change your life",
+        "must watch", "watch now", "don't miss", "insane", "crazy", "gamechanger",
+        # Hype/unrealistic promises
+        "millionaire", "get rich", "easy money", "get rich quick", "overnight",
+        "100% win rate", "never lose", "guaranteed", "free money", 
+        "unlimited profit", "passive income trick",
+        # Meme/gambling content
+        "meme stock", "wsb", "wallstreetbets", "yolo", "to the moon",
+        # Meta content (not focused on strategy)
+        "q&a", "ask me anything", "ama", "subscriber question", "community post",
+    ],
+}
+
+# Minimum content score to include in results (others are filtered out)
+MIN_CONTENT_SCORE = -10  # Set negative to be lenient, increase to be stricter
 
 
 class YouTubeSearchClient:
@@ -100,21 +196,38 @@ class YouTubeSearchClient:
                 stats = video.get("statistics", {})
                 channel_id = snippet["channelId"]
                 
-                # Calculate quality score
-                score = self._calculate_quality_score(
+                # Calculate content score (keyword-based filtering)
+                title = snippet.get("title", "")
+                description = snippet.get("description", "")
+                content_score, content_signals = self._calculate_content_score(title, description)
+                
+                # Skip videos with very low content score (noise)
+                if content_score < MIN_CONTENT_SCORE:
+                    continue
+                
+                # Calculate quality score (metrics-based)
+                quality_score = self._calculate_quality_score(
                     video_stats=stats,
                     channel_stats=channel_stats.get(channel_id, {}),
                     channel_id=channel_id,
                     duration=video.get("contentDetails", {}).get("duration", "")
                 )
                 
-                # Determine quality tier
-                if score >= 70:
+                # Combined score: quality + content bonus
+                combined_score = quality_score + min(content_score, 20)  # Cap content bonus at 20
+                
+                # Determine quality tier based on combined score
+                if combined_score >= 70:
                     tier = "high"
-                elif score >= 40:
+                elif combined_score >= 40:
                     tier = "medium"
                 else:
                     tier = "low"
+                
+                # Get quality signals and add content signals
+                quality_signals = self._get_quality_signals(stats, channel_stats.get(channel_id, {}))
+                if content_signals:
+                    quality_signals.extend(content_signals)
                 
                 candidates.append({
                     "url": f"https://www.youtube.com/watch?v={video['id']}",
@@ -122,8 +235,9 @@ class YouTubeSearchClient:
                     "author": snippet["channelTitle"],
                     "source_type": "youtube",
                     "quality_tier": tier,
-                    "quality_score": score,
-                    "quality_signals": self._get_quality_signals(stats, channel_stats.get(channel_id, {})),
+                    "quality_score": combined_score,
+                    "content_score": content_score,
+                    "quality_signals": quality_signals,
                     "metrics": {
                         "views": int(stats.get("viewCount", 0)),
                         "likes": int(stats.get("likeCount", 0)),
@@ -133,7 +247,7 @@ class YouTubeSearchClient:
                     "published_at": snippet.get("publishedAt", ""),
                 })
             
-            # Sort by quality score
+            # Sort by combined quality score
             candidates.sort(key=lambda x: x["quality_score"], reverse=True)
             
             return candidates
@@ -168,6 +282,45 @@ class YouTubeSearchClient:
             seconds = int(sec_match.group(1))
         
         return hours * 3600 + minutes * 60 + seconds
+    
+    def _calculate_content_score(self, title: str, description: str) -> tuple[int, List[str]]:
+        """
+        Calculate content relevance score based on keywords in title/description.
+        
+        Returns:
+            Tuple of (score, signals) where:
+            - score: Integer score (can be negative for noise)
+            - signals: List of human-readable signals found
+        """
+        text = f"{title} {description}".lower()
+        score = 0
+        signals = []
+        
+        # Check for high signal keywords (+15 each)
+        high_signals_found = 0
+        for keyword in STRATEGY_KEYWORDS["high_signal"]:
+            if keyword.lower() in text:
+                score += 15
+                high_signals_found += 1
+                if high_signals_found <= 2:  # Only add first 2 as signals to avoid clutter
+                    signals.append(f"📍 {keyword}")
+        
+        # Check for medium signal keywords (+8 each)
+        medium_signals_found = 0
+        for keyword in STRATEGY_KEYWORDS["medium_signal"]:
+            if keyword.lower() in text:
+                score += 8
+                medium_signals_found += 1
+                if medium_signals_found <= 2 and high_signals_found == 0:
+                    signals.append(f"✓ {keyword}")
+        
+        # Check for noise patterns (-15 each)
+        for pattern in STRATEGY_KEYWORDS["noise_patterns"]:
+            if pattern.lower() in text:
+                score -= 15
+                signals.append(f"⚠️ {pattern}")
+        
+        return score, signals
     
     def _calculate_quality_score(
         self,

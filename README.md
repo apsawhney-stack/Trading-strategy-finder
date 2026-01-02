@@ -48,6 +48,7 @@ Create `backend/.env` with:
 
 ```
 GEMINI_API_KEY=your_gemini_api_key  # Required for LLM extraction
+YOUTUBE_API_KEY=your_youtube_key   # Required for Discovery live search
 REDDIT_CLIENT_ID=your_reddit_id     # Optional for Reddit extraction
 REDDIT_CLIENT_SECRET=your_secret    # Optional for Reddit extraction
 ```
@@ -58,6 +59,38 @@ REDDIT_CLIENT_SECRET=your_secret    # Optional for Reddit extraction
 - **Specificity Scoring**: Rate how actionable the content is (1-10)
 - **Trust Scoring**: Detect survivorship bias
 - **Consensus View**: Compare multiple sources on the same strategy
+- **Discovery with Live Search**: Find relevant strategy videos via YouTube Data API
+
+### YouTube Live Search (Discovery Feature)
+
+Search for options trading strategies directly from the app. The discovery modal queries YouTube's API to find relevant videos with quality scoring.
+
+**How it works:**
+1. Click "Discover" in the header
+2. Enter a strategy query (e.g., "iron condor", "SPX put credit spread")
+3. View results with rich attribution:
+   - **View count** (e.g., 50K views)
+   - **Published date** (e.g., Jun 2024)
+   - **Quality signals** (subscriber count, likes)
+   - **Quality tier** (HIGH/MEDIUM/LOW)
+4. Select videos to extract
+
+**Quality Scoring Criteria:**
+| Signal | Weight |
+|--------|--------|
+| Views > 100K | High |
+| Subscribers > 100K | High |
+| Likes > 1,000 | Medium |
+| Trusted Channel | +20 boost |
+| Video 8-30 min | +10 bonus |
+
+**Fallback Behavior:**
+- Falls back to curated sources if API quota exceeded
+- Trusted channels list in `backend/app/discovery/trusted_channels.py`
+
+## Documentation
+
+- **[PRD.md](./PRD.md)** - Full Product Requirements Document with feature specs, test cases, and implementation details
 
 ## Tech Stack
 
@@ -80,5 +113,6 @@ REDDIT_CLIENT_SECRET=your_secret    # Optional for Reddit extraction
 │   │   ├── /discovery   # Source discovery
 │   │   └── /models      # Pydantic schemas
 │   └── requirements.txt
+├── PRD.md            # Product Requirements Document
 └── README.md
 ```
