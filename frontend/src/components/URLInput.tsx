@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './URLInput.css';
 
 interface URLInputProps {
@@ -8,6 +8,7 @@ interface URLInputProps {
 
 export function URLInput({ onSubmit, disabled }: URLInputProps) {
     const [url, setUrl] = useState('');
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -15,6 +16,11 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
             onSubmit(url.trim());
             setUrl('');
         }
+    };
+
+    const handleClear = () => {
+        setUrl('');
+        inputRef.current?.focus();
     };
 
     const detectSourceType = (url: string): 'youtube' | 'reddit' | 'article' | null => {
@@ -30,12 +36,14 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
         <form className="url-input-form" onSubmit={handleSubmit}>
             <div className="input-wrapper">
                 <input
+                    ref={inputRef}
                     type="text"
-                    className="input url-input"
+                    className={`input url-input ${sourceType ? 'with-badge' : ''}`}
                     placeholder="Paste YouTube, Reddit, or article URL..."
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     disabled={disabled}
+                    aria-label="URL to extract"
                 />
                 {sourceType && (
                     <span className={`source-badge source-${sourceType}`}>
@@ -44,6 +52,17 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
                         {sourceType === 'article' && '🌐'}
                         {sourceType}
                     </span>
+                )}
+                {url && !disabled && (
+                    <button
+                        type="button"
+                        className="clear-btn"
+                        onClick={handleClear}
+                        aria-label="Clear URL"
+                        title="Clear URL"
+                    >
+                        ✕
+                    </button>
                 )}
             </div>
             <button
