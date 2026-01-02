@@ -164,54 +164,103 @@ async def discover_sources(
     """
     Discover sources for a strategy query.
     
-    Note: Full implementation requires YouTube Data API key and is async.
-    This uses curated sources with fuzzy matching.
+    Uses live YouTube search when available, falls back to curated sources
+    on error or rate limit.
     """
     candidates = []
     filters_applied = QUALITY_FILTERS.copy()
-    query_lower = query.lower()
+    youtube_searched = False
+    youtube_error = None
     
-    # Find matching strategy categories
-    matched_strategies = []
-    for strategy_key, aliases in STRATEGY_ALIASES.items():
-        if any(alias in query_lower for alias in aliases):
-            matched_strategies.append(strategy_key)
-    
-    # If no exact match, try partial word matching
-    if not matched_strategies:
-        for strategy_key, aliases in STRATEGY_ALIASES.items():
-            for alias in aliases:
-                if any(word in alias for word in query_lower.split() if len(word) > 2):
-                    if strategy_key not in matched_strategies:
-                        matched_strategies.append(strategy_key)
-    
-    # Get curated sources for matched strategies
-    for strategy_key in matched_strategies:
-        if strategy_key in CURATED_SOURCES:
-            for source in CURATED_SOURCES[strategy_key]:
-                # Filter by platform
-                source_platform = source["source_type"]
-                if source_platform == "youtube" and "youtube" not in platforms:
-                    continue
-                if source_platform == "reddit" and "reddit" not in platforms:
-                    continue
-                if source_platform == "article" and "web" not in platforms:
-                    continue
-                
+    # Step 1: Try live YouTube search if platform selected
+    if "youtube" in platforms:
+        try:
+            from app.discovery.youtube_search import search_youtube
+            import logging
+            logging.info(f"Attempting YouTube live search for: {query}")
+            
+            youtube_results = await search_youtube(query)
+            youtube_searched = True
+            logging.info(f"YouTube search returned {len(youtube_results)} results")
+            
+            for result in youtube_results:
                 candidates.append(DiscoveryCandidate(
-                    url=source["url"],
-                    title=source["title"],
-                    author=source["author"],
-                    source_type=source["source_type"],
-                    quality_tier=source["quality"],
-                    quality_signals=["Curated source", "Known educator", f"Strategy: {strategy_key}"],
-                    metrics={},
+                    url=result["url"],
+                    title=result["title"],
+                    author=result["author"],
+                    source_type="youtube",
+                    quality_tier=result["quality_tier"],
+                    quality_signals=result["quality_signals"],
+                    metrics=result.get("metrics", {}),
                 ))
+            
+            filters_applied.append("Live YouTube search")
+            
+        except Exception as e:
+            youtube_error = str(e)
+            import logging
+            logging.error(f"YouTube search failed with error: {youtube_error}")
+            # Will fall back to curated sources below
+    
+    # Step 2: If YouTube search failed or not selected, use curated sources
+    if not youtube_searched or youtube_error:
+        query_lower = query.lower()
+        
+        # Find matching strategy categories
+        matched_strategies = []
+        for strategy_key, aliases in STRATEGY_ALIASES.items():
+            if any(alias in query_lower for alias in aliases):
+                matched_strategies.append(strategy_key)
+        
+        # If no exact match, try partial word matching
+        if not matched_strategies:
+            for strategy_key, aliases in STRATEGY_ALIASES.items():
+                for alias in aliases:
+                    if any(word in alias for word in query_lower.split() if len(word) > 2):
+                        if strategy_key not in matched_strategies:
+                            matched_strategies.append(strategy_key)
+        
+        # Get curated sources for matched strategies
+        for strategy_key in matched_strategies:
+            if strategy_key in CURATED_SOURCES:
+                for source in CURATED_SOURCES[strategy_key]:
+                    # Filter by platform
+                    source_platform = source["source_type"]
+                    if source_platform == "youtube" and "youtube" not in platforms:
+                        continue
+                    if source_platform == "reddit" and "reddit" not in platforms:
+                        continue
+                    if source_platform == "article" and "web" not in platforms:
+                        continue
+                    
+                    candidates.append(DiscoveryCandidate(
+                        url=source["url"],
+                        title=source["title"],
+                        author=source["author"],
+                        source_type=source["source_type"],
+                        quality_tier=source["quality"],
+                        quality_signals=["Curated source", "Known educator", f"Strategy: {strategy_key}"],
+                        metrics={},
+                    ))
+        
+        if youtube_error:
+            filters_applied.append(f"Curated fallback (YouTube error: {youtube_error})")
+        else:
+            filters_applied.append("Curated sources")
+    
+    # Step 3: Deduplicate by URL
+    seen_urls = set()
+    unique_candidates = []
+    for c in candidates:
+        if c.url not in seen_urls:
+            seen_urls.add(c.url)
+            unique_candidates.append(c)
     
     # Limit results
-    candidates = candidates[:max_results]
+    unique_candidates = unique_candidates[:max_results]
     
     return DiscoveryResult(
-        candidates=candidates[:max_results],
+        candidates=unique_candidates,
         filters_applied=filters_applied,
     )
+

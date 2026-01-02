@@ -124,6 +124,28 @@ async def _call_gemini(prompt: str) -> str:
     return response.text
 
 
+VALID_INTERPRETATIONS = {"explicit", "implicit", "inferred", "missing"}
+
+
+def _normalize_interpretation(value: str) -> str:
+    """Normalize interpretation value to valid literal."""
+    if not value:
+        return "missing"
+    
+    value_lower = value.lower().strip()
+    
+    # Direct match
+    if value_lower in VALID_INTERPRETATIONS:
+        return value_lower
+    
+    # Fuzzy match - if value contains a valid interpretation, use it
+    for valid in ["explicit", "implicit", "inferred"]:
+        if valid in value_lower:
+            return valid
+    
+    return "missing"
+
+
 def _parse_field(data: dict, key: str) -> ExtractedField:
     """Parse a field from JSON into ExtractedField."""
     if not data or key not in data:
@@ -138,7 +160,7 @@ def _parse_field(data: dict, key: str) -> ExtractedField:
             value=str(field_data.get("value", "")) if field_data.get("value") else None,
             confidence=float(field_data.get("confidence", 0)) if field_data.get("confidence") else 0.0,
             source_quote=quote,
-            interpretation=field_data.get("interpretation", "missing"),
+            interpretation=_normalize_interpretation(field_data.get("interpretation", "missing")),
         )
     return ExtractedField(value=str(field_data) if field_data else None, confidence=0.5)
 
@@ -174,10 +196,22 @@ def _parse_numeric_field(data: dict, key: str) -> ExtractedNumericField:
             value_range=tuple(value_range) if value_range and isinstance(value_range, list) else None,
             confidence=float(field_data.get("confidence", 0)) if field_data.get("confidence") else 0.0,
             source_quote=quote,
-            interpretation=field_data.get("interpretation", "missing"),
+            interpretation=_normalize_interpretation(field_data.get("interpretation", "missing")),
         )
     return ExtractedNumericField(value=extract_number(field_data), confidence=0.5)
 
+
+def _extract_string_list(items: list) -> list[str]:
+    """Extract plain strings from a list that may contain dicts with 'value' keys."""
+    result = []
+    for item in items:
+        if isinstance(item, str):
+            result.append(item)
+        elif isinstance(item, dict) and "value" in item:
+            result.append(str(item["value"]))
+        elif item is not None:
+            result.append(str(item))
+    return result
 
 
 def _parse_extraction(json_str: str) -> ExtractedStrategy:
@@ -258,9 +292,9 @@ def _parse_extraction(json_str: str) -> ExtractedStrategy:
                 bias_detected=data.get("failure_analysis", {}).get("bias_detected", True),
             ),
             
-            key_insights=data.get("key_insights", []),
-            warnings=data.get("warnings", []),
-            quotes=data.get("quotes", []),
+            key_insights=_extract_string_list(data.get("key_insights", [])),
+            warnings=_extract_string_list(data.get("warnings", [])),
+            quotes=_extract_string_list(data.get("quotes", [])),
         )
         
     except json.JSONDecodeError as e:

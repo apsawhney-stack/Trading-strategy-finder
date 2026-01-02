@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     
     # API Keys
     gemini_api_key: str = ""
+    youtube_api_key: str = ""  # For YouTube Data API v3 live search
     reddit_client_id: str = ""
     reddit_client_secret: str = ""
     reddit_user_agent: str = "StrategyFinder/1.0"
