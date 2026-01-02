@@ -129,26 +129,57 @@ export function DiscoveryModal({ onClose, onExtract }: DiscoveryModalProps) {
                                 <button className="btn-link" onClick={selectAll}>Select All</button>
                             </div>
                             <div className="candidates-list">
-                                {candidates.map(candidate => (
-                                    <div
-                                        key={candidate.url}
-                                        className={`candidate-item ${selected.has(candidate.url) ? 'selected' : ''}`}
-                                        onClick={() => toggleCandidate(candidate.url)}
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            checked={selected.has(candidate.url)}
-                                            onChange={() => toggleCandidate(candidate.url)}
-                                        />
-                                        <div className="candidate-info">
-                                            <span className="candidate-title">{candidate.title}</span>
-                                            <span className="candidate-author">{candidate.author}</span>
+                                {candidates.map(candidate => {
+                                    const views = candidate.metrics?.views;
+                                    const publishDate = candidate.published_at
+                                        ? new Date(candidate.published_at).toLocaleDateString('en-US', {
+                                            month: 'short',
+                                            year: 'numeric'
+                                        })
+                                        : null;
+
+                                    const formatViews = (v: number) => {
+                                        if (v >= 1000000) return `${(v / 1000000).toFixed(1)}M`;
+                                        if (v >= 1000) return `${(v / 1000).toFixed(0)}K`;
+                                        return v.toString();
+                                    };
+
+                                    return (
+                                        <div
+                                            key={candidate.url}
+                                            className={`candidate-item ${selected.has(candidate.url) ? 'selected' : ''}`}
+                                            onClick={() => toggleCandidate(candidate.url)}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                checked={selected.has(candidate.url)}
+                                                onChange={() => toggleCandidate(candidate.url)}
+                                            />
+                                            <div className="candidate-info">
+                                                <span className="candidate-title">{candidate.title}</span>
+                                                <div className="candidate-meta">
+                                                    <span className="candidate-author">{candidate.author}</span>
+                                                    {views && views > 0 && (
+                                                        <span className="candidate-views">👁 {formatViews(views)}</span>
+                                                    )}
+                                                    {publishDate && (
+                                                        <span className="candidate-date">📅 {publishDate}</span>
+                                                    )}
+                                                </div>
+                                                {candidate.quality_signals && candidate.quality_signals.length > 0 && (
+                                                    <div className="candidate-signals">
+                                                        {candidate.quality_signals.slice(0, 3).map((signal, i) => (
+                                                            <span key={i} className="signal-tag">{signal}</span>
+                                                        ))}
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <span className={`tier-badge ${tierClass(candidate.quality_tier)}`}>
+                                                {candidate.quality_tier}
+                                            </span>
                                         </div>
-                                        <span className={`tier-badge ${tierClass(candidate.quality_tier)}`}>
-                                            {candidate.quality_tier}
-                                        </span>
-                                    </div>
-                                ))}
+                                    );
+                                })}
                             </div>
                         </>
                     )}

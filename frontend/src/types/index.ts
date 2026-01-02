@@ -187,6 +187,7 @@ export interface DiscoveryCandidate {
     quality_tier: 'high' | 'medium' | 'low';
     quality_signals: string[];
     metrics: Record<string, number>;
+    published_at?: string;
 }
 
 export interface ConsensusItem {

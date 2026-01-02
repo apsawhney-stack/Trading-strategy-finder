@@ -3,7 +3,7 @@ Source discovery module.
 Searches YouTube, Reddit, and curated sites for strategy content.
 """
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel
 
 
@@ -16,6 +16,7 @@ class DiscoveryCandidate(BaseModel):
     quality_tier: Literal["high", "medium", "low"]
     quality_signals: List[str]
     metrics: dict = {}
+    published_at: Optional[str] = None
 
 
 class DiscoveryResult(BaseModel):
@@ -192,6 +193,7 @@ async def discover_sources(
                     quality_tier=result["quality_tier"],
                     quality_signals=result["quality_signals"],
                     metrics=result.get("metrics", {}),
+                    published_at=result.get("published_at"),
                 ))
             
             filters_applied.append("Live YouTube search")

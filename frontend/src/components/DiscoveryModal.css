@@ -168,6 +168,35 @@
     color: var(--text-muted);
 }
 
+.candidate-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+}
+
+.candidate-views,
+.candidate-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+
+.candidate-signals {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.signal-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    background: rgba(59, 130, 246, 0.1);
+    border-radius: var(--radius-sm);
+    color: var(--text-secondary);
+}
+
 .tier-badge {
     font-size: 10px;
     padding: 2px 6px;
