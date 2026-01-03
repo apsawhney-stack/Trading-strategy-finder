@@ -29,7 +29,9 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
     return (
         <form className="url-input-form" onSubmit={handleSubmit}>
             <div className="input-wrapper">
+                <label htmlFor="url-input" className="sr-only">URL</label>
                 <input
+                    id="url-input"
                     type="text"
                     className="input url-input"
                     placeholder="Paste YouTube, Reddit, or article URL..."
@@ -38,7 +40,11 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
                     disabled={disabled}
                 />
                 {sourceType && (
-                    <span className={`source-badge source-${sourceType}`}>
+                    <span
+                        className={`source-badge source-${sourceType}`}
+                        aria-label={`Source type: ${sourceType}`}
+                        role="status"
+                    >
                         {sourceType === 'youtube' && '📹'}
                         {sourceType === 'reddit' && '📄'}
                         {sourceType === 'article' && '🌐'}

@@ -90,14 +90,16 @@ export function HomePage() {
                     return (b.quality_metrics?.specificity_score || 0) - (a.quality_metrics?.specificity_score || 0);
                 case 'trust':
                     return (b.quality_metrics?.trust_score || 0) - (a.quality_metrics?.trust_score || 0);
-                case 'date':
+                case 'date': {
                     const dateA = a.published_date ? new Date(a.published_date).getTime() : 0;
                     const dateB = b.published_date ? new Date(b.published_date).getTime() : 0;
                     return dateB - dateA;
-                case 'title':
+                }
+                case 'title': {
                     const titleA = a.title || '';
                     const titleB = b.title || '';
                     return titleA.localeCompare(titleB);
+                }
                 default:
                     return 0;
             }
@@ -199,6 +201,7 @@ export function HomePage() {
                                 <button
                                     className="btn btn-primary"
                                     onClick={() => setShowDiscovery(true)}
+                                    aria-label="Discover new strategy sources"
                                 >
                                     🔍 Discover Sources
                                 </button>

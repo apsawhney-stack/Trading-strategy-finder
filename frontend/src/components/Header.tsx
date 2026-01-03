@@ -13,7 +13,11 @@ export function Header({ onDiscoverClick }: HeaderProps) {
                     <span className="logo-text">STRATEGY FINDER</span>
                 </div>
                 <nav className="nav">
-                    <button className="btn btn-secondary" onClick={onDiscoverClick}>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={onDiscoverClick}
+                        aria-label="Discover sources"
+                    >
                         <span>🔍</span> Discover
                     </button>
                 </nav>
