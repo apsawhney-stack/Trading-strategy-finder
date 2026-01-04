@@ -154,6 +154,7 @@ export function DiscoveryModal({ onClose, onExtract }: DiscoveryModalProps) {
                                                 type="checkbox"
                                                 checked={selected.has(candidate.url)}
                                                 onChange={() => toggleCandidate(candidate.url)}
+                                                aria-label={`Select ${candidate.title}`}
                                             />
                                             <div className="candidate-info">
                                                 <span className="candidate-title">{candidate.title}</span>
