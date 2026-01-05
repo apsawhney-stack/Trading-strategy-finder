@@ -29,7 +29,11 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
     return (
         <form className="url-input-form" onSubmit={handleSubmit}>
             <div className="input-wrapper">
+                <label htmlFor="url-input" className="sr-only">
+                    URL to extract strategy from
+                </label>
                 <input
+                    id="url-input"
                     type="text"
                     className="input url-input"
                     placeholder="Paste YouTube, Reddit, or article URL..."
