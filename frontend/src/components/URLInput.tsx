@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import './URLInput.css';
 
 interface URLInputProps {
@@ -8,6 +8,7 @@ interface URLInputProps {
 
 export function URLInput({ onSubmit, disabled }: URLInputProps) {
     const [url, setUrl] = useState('');
+    const inputId = useId();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -29,8 +30,12 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
     return (
         <form className="url-input-form" onSubmit={handleSubmit}>
             <div className="input-wrapper">
+                <label htmlFor={inputId} className="sr-only">
+                    Paste YouTube, Reddit, or article URL
+                </label>
                 <input
-                    type="text"
+                    id={inputId}
+                    type="url"
                     className="input url-input"
                     placeholder="Paste YouTube, Reddit, or article URL..."
                     value={url}
@@ -50,6 +55,7 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
                 type="submit"
                 className="btn btn-primary extract-btn"
                 disabled={disabled || !url.trim()}
+                aria-busy={disabled}
             >
                 {disabled ? (
                     <>
