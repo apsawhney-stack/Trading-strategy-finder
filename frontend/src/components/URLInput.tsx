@@ -36,24 +36,31 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
                     value={url}
                     onChange={(e) => setUrl(e.target.value)}
                     disabled={disabled}
+                    aria-label="Paste URL to extract"
                 />
                 {sourceType && (
-                    <span className={`source-badge source-${sourceType}`}>
-                        {sourceType === 'youtube' && '📹'}
-                        {sourceType === 'reddit' && '📄'}
-                        {sourceType === 'article' && '🌐'}
-                        {sourceType}
-                    </span>
+                    <>
+                        <span className="sr-only" role="status" aria-live="polite">
+                            Detected source type: {sourceType}
+                        </span>
+                        <span className={`source-badge source-${sourceType}`} aria-hidden="true">
+                            {sourceType === 'youtube' && '📹'}
+                            {sourceType === 'reddit' && '📄'}
+                            {sourceType === 'article' && '🌐'}
+                            {sourceType}
+                        </span>
+                    </>
                 )}
             </div>
             <button
                 type="submit"
                 className="btn btn-primary extract-btn"
                 disabled={disabled || !url.trim()}
+                aria-label={disabled ? 'Extracting strategy...' : 'Extract strategy'}
             >
                 {disabled ? (
                     <>
-                        <span className="spinner"></span>
+                        <span className="spinner" aria-hidden="true"></span>
                         Extracting...
                     </>
                 ) : (
