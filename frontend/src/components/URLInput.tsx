@@ -31,6 +31,7 @@ export function URLInput({ onSubmit, disabled }: URLInputProps) {
             <div className="input-wrapper">
                 <input
                     type="text"
+                    aria-label="URL to extract strategy from"
                     className="input url-input"
                     placeholder="Paste YouTube, Reddit, or article URL..."
                     value={url}
