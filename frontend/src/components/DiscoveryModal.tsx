@@ -72,7 +72,7 @@ export function DiscoveryModal({ onClose, onExtract }: DiscoveryModalProps) {
             <div className="discovery-modal" onClick={e => e.stopPropagation()}>
                 <header className="discovery-header">
                     <h2>Discover Sources</h2>
-                    <button className="close-btn" onClick={onClose}>✕</button>
+                    <button className="close-btn" onClick={onClose} aria-label="Close">✕</button>
                 </header>
 
                 <div className="discovery-search">
